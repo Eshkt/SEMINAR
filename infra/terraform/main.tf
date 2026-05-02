@@ -53,6 +53,7 @@ module "lambda" {
   environment          = var.environment
   security_group_id    = aws_security_group.lambda.id
   db_url               = "postgresql://qa_user:${var.db_password}@${module.rds.endpoint}/qa_db"
+  admin_password       = var.admin_password
   appsync_url          = module.appsync.graphql_url
   appsync_arn          = module.appsync.api_arn
   appsync_id           = module.appsync.api_id

@@ -3,7 +3,7 @@
 // lambda: verify Cognito JWT
 const { CognitoJwtVerifier } = require('aws-jwt-verify');
 
-const ADMIN_PASS = 'localadmin123';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'localadmin123';
 const RUNTIME = process.env.RUNTIME;
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const CLIENT_ID = process.env.COGNITO_CLIENT_ID;

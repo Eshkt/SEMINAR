@@ -44,6 +44,11 @@ variable "cognito_client_id" {
   type = string
 }
 
+variable "admin_password" {
+  type      = string
+  sensitive = true
+}
+
 variable "lambda_zip_path" {
   type = string
 }
@@ -121,6 +126,7 @@ resource "aws_lambda_function" "main" {
   environment {
     variables = {
       DB_URL                = var.db_url
+      ADMIN_PASS            = var.admin_password
       APPSYNC_URL           = var.appsync_url
       APPSYNC_KEY           = var.appsync_key
       BEDROCK_MODEL_ID      = var.bedrock_model_id

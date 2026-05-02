@@ -11,6 +11,12 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "admin_password" {
+  description = "Admin password for API access"
+  type        = string
+  sensitive   = true
+}
+
 variable "admin_email" {
   description = "Admin email for Cognito user creation"
   type        = string

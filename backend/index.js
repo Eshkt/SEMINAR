@@ -14,9 +14,8 @@ const bedrockMod = require('./lib/bedrockMod');
 const realtime = require('./lib/realtime');
 const adminMiddleware = require('./lib/adminMiddleware');
 
-// Hardcoded dev env
-const DB_URL = 'postgres://qa_user:qa_pass@localhost:5432/qa_db';
-const ADMIN_PASS = 'localadmin123';
+const DB_URL = process.env.DB_URL || 'postgres://qa_user:qa_pass@localhost:5432/qa_db';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'localadmin123';
 const RUNTIME = process.env.RUNTIME || 'local';
 
 const app = express();
