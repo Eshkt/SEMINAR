@@ -1,0 +1,20 @@
+{
+  "questions": [
+    {
+      "id": "085cb25b-6a00-4ee8-a200-e9daa9b5a080",
+      "text": "This is a clean question",
+      "author": "Anonymous",
+      "status": "pending",
+      "upvotes": 0,
+      "createdAt": 1777697638414
+    },
+    {
+      "id": "0778104f-0e98-48a5-8ea3-07ba57a89f6a",
+      "text": "Test question",
+      "author": "Anonymous",
+      "status": "pending",
+      "upvotes": 0,
+      "createdAt": 1777697668838
+    }
+  ]
+}
