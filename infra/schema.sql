@@ -6,4 +6,4 @@ CREATE TABLE questions (
   stat status_enum NOT NULL DEFAULT 'pend',
   gid  UUID REFERENCES questions(id),
   ts   TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+)
