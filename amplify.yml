@@ -13,6 +13,7 @@ applications:
           commands:
             - export VITE_API_URL='https://eepdc4xkc4lm7mhiudfhbc3vvy0ismrz.lambda-url.ap-southeast-1.on.aws'
             - npm run build
+            - echo "/* /index.html 200" > dist/_redirects
       artifacts:
         baseDirectory: dist
         files:
