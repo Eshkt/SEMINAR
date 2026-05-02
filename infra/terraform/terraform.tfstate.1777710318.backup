@@ -1,0 +1,149 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.4",
+  "serial": 80,
+  "lineage": "4411072f-82c5-9916-96cc-49a47dbdbe45",
+  "outputs": {},
+  "resources": [
+    {
+      "module": "module.rds",
+      "mode": "data",
+      "type": "aws_subnets",
+      "name": "default",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "filter": [
+              {
+                "name": "vpc-id",
+                "values": [
+                  "vpc-06cb2fce8671f3fd7"
+                ]
+              }
+            ],
+            "id": "ap-southeast-1",
+            "ids": [
+              "subnet-0be19f14aa9fe2bc5",
+              "subnet-0cf304761a8a804cb",
+              "subnet-06725c95a15fd0a2e"
+            ],
+            "tags": null,
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.rds",
+      "mode": "data",
+      "type": "aws_vpc",
+      "name": "default",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:804887692450:vpc/vpc-06cb2fce8671f3fd7",
+            "cidr_block": "172.31.0.0/16",
+            "cidr_block_associations": [
+              {
+                "association_id": "vpc-cidr-assoc-04241454ef7317989",
+                "cidr_block": "172.31.0.0/16",
+                "state": "associated"
+              }
+            ],
+            "default": true,
+            "dhcp_options_id": "dopt-06b02bcc0fc6e85ca",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "enable_network_address_usage_metrics": false,
+            "filter": null,
+            "id": "vpc-06cb2fce8671f3fd7",
+            "instance_tenancy": "default",
+            "ipv6_association_id": "",
+            "ipv6_cidr_block": "",
+            "main_route_table_id": "rtb-0be49c7d48600cacf",
+            "owner_id": "804887692450",
+            "state": null,
+            "tags": {},
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.rds",
+      "mode": "managed",
+      "type": "aws_db_subnet_group",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:rds:ap-southeast-1:804887692450:subgrp:seminar-qa-prod-db-subnet",
+            "description": "Managed by Terraform",
+            "id": "seminar-qa-prod-db-subnet",
+            "name": "seminar-qa-prod-db-subnet",
+            "name_prefix": "",
+            "subnet_ids": [
+              "subnet-06725c95a15fd0a2e",
+              "subnet-0be19f14aa9fe2bc5",
+              "subnet-0cf304761a8a804cb"
+            ],
+            "supported_network_types": [
+              "IPV4"
+            ],
+            "tags": {},
+            "tags_all": {},
+            "vpc_id": "vpc-06cb2fce8671f3fd7"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.rds.data.aws_subnets.default",
+            "module.rds.data.aws_vpc.default"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.rds",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "rds",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:804887692450:security-group/sg-06589c50f6c96f1e8",
+            "description": "Allow PostgreSQL from Lambda",
+            "egress": [],
+            "id": "sg-06589c50f6c96f1e8",
+            "ingress": [],
+            "name": "seminar-qa-prod-rds-sg",
+            "name_prefix": "",
+            "owner_id": "804887692450",
+            "revoke_rules_on_delete": false,
+            "tags": {},
+            "tags_all": {},
+            "timeouts": null,
+            "vpc_id": "vpc-06cb2fce8671f3fd7"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0="
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

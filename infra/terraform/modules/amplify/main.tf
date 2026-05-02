@@ -37,7 +37,7 @@ variable "vite_cognito_client_id" {
 }
 
 resource "aws_amplify_app" "main" {
-  name       = "cnag-clouded"
+  name       = var.app_name
   repository = var.repository
   access_token = var.access_token
 
@@ -52,6 +52,7 @@ resource "aws_amplify_app" "main" {
             - npm ci
         build:
           commands:
+            - cd frontend
             - npm run build
       artifacts:
         baseDirectory: frontend/dist

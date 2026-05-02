@@ -69,7 +69,7 @@ module "amplify" {
   environment = var.environment
   repository  = "https://gitlab.com/franky.parcon/qna-web-app"
   access_token = var.gitlab_access_token
-  branch_name  = "feature/deployment"
+  branch_name  = "main"
 
   vite_api_url              = module.lambda.function_url
   vite_appsync_url          = module.appsync.graphql_url

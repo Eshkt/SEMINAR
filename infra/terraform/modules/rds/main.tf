@@ -56,9 +56,10 @@ resource "aws_db_instance" "main" {
   instance_class      = "db.t3.micro"
   db_name             = "qa_db"
   username            = "qa_user"
-  password            = var.db_password
-  skip_final_snapshot = var.environment == "dev" ? true : false
-  storage_encrypted   = true
+  password                  = var.db_password
+  skip_final_snapshot       = false
+  final_snapshot_identifier = "seminar-final-snapshot"
+  storage_encrypted         = true
   allocated_storage   = 20
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds.id]

@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Amplify } from 'aws-amplify';
-import { graphqlSubscription } from 'aws-amplify/api';
+import { generateClient } from 'aws-amplify/api';
 
 const VITE_RUNTIME = import.meta.env.VITE_RUNTIME || 'local';
 const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -65,11 +65,10 @@ export function useRealtimeQuestions(initialQuestions) {
         },
       });
 
-      const subscription = graphqlSubscription({
+      const client = generateClient();
+      const sub = client.graphql({
         query: ON_QUESTION_UPDATE,
-      });
-
-      const sub = subscription.subscribe({
+      }).subscribe({
         next: ({ data }) => {
           const q = data.onQuestionUpdate;
           setQuestions((prev) => {

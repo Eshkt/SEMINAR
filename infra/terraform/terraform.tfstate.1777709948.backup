@@ -1,0 +1,854 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.4",
+  "serial": 55,
+  "lineage": "4411072f-82c5-9916-96cc-49a47dbdbe45",
+  "outputs": {
+    "amplify_url": {
+      "value": "https://feature/deployment.d1fe4ajnnqm9sy.amplifyapp.com",
+      "type": "string"
+    },
+    "appsync_api_key": {
+      "value": "da2-g5bmystrbzfsvg47bouvm3tugy",
+      "type": "string",
+      "sensitive": true
+    },
+    "appsync_url": {
+      "value": "https://an7wt4l3yvfr3fq2ndl3yekw74.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+      "type": "string"
+    },
+    "cognito_client_id": {
+      "value": "3c7kvhjv88s062jp7nje9dusrm",
+      "type": "string"
+    },
+    "cognito_user_pool_id": {
+      "value": "ap-southeast-1_Zo62JX9jU",
+      "type": "string"
+    },
+    "lambda_url": {
+      "value": "https://htmru5bvtpowddxiyihz4aqwva0bbxik.lambda-url.ap-southeast-1.on.aws/",
+      "type": "string"
+    },
+    "rds_endpoint": {
+      "value": "seminar-qa-prod-db.cj02iicikub7.ap-southeast-1.rds.amazonaws.com:5432",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "lambda",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:804887692450:security-group/sg-027693b1ceb7d2eeb",
+            "description": "Lambda security group",
+            "egress": [],
+            "id": "sg-027693b1ceb7d2eeb",
+            "ingress": [],
+            "name": "cnag-clouded-prod-lambda-sg",
+            "name_prefix": "",
+            "owner_id": "804887692450",
+            "revoke_rules_on_delete": false,
+            "tags": {},
+            "tags_all": {},
+            "timeouts": null,
+            "vpc_id": "vpc-06cb2fce8671f3fd7"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0="
+        }
+      ]
+    },
+    {
+      "module": "module.appsync",
+      "mode": "managed",
+      "type": "aws_appsync_api_key",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_id": "5obmfc6w6jbr5fevorn5fu2me4",
+            "api_key_id": "da2-g5bmystrbzfsvg47bouvm3tugy",
+            "description": "Managed by Terraform",
+            "expires": "2026-05-09T06:00:00Z",
+            "id": "5obmfc6w6jbr5fevorn5fu2me4:da2-g5bmystrbzfsvg47bouvm3tugy",
+            "key": "da2-g5bmystrbzfsvg47bouvm3tugy"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.appsync.aws_appsync_graphql_api.main",
+            "module.cognito.aws_cognito_user_pool.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.appsync",
+      "mode": "managed",
+      "type": "aws_appsync_graphql_api",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "additional_authentication_provider": [
+              {
+                "authentication_type": "API_KEY",
+                "lambda_authorizer_config": [],
+                "openid_connect_config": [],
+                "user_pool_config": []
+              }
+            ],
+            "api_type": "GRAPHQL",
+            "arn": "arn:aws:appsync:ap-southeast-1:804887692450:apis/5obmfc6w6jbr5fevorn5fu2me4",
+            "authentication_type": "AMAZON_COGNITO_USER_POOLS",
+            "enhanced_metrics_config": [],
+            "id": "5obmfc6w6jbr5fevorn5fu2me4",
+            "introspection_config": "ENABLED",
+            "lambda_authorizer_config": [],
+            "log_config": [],
+            "merged_api_execution_role_arn": "",
+            "name": "cnag-clouded-prod-api",
+            "openid_connect_config": [],
+            "query_depth_limit": 0,
+            "resolver_count_limit": 0,
+            "schema": "type Question {\n  id: ID!\n  txt: String!\n  stat: String!\n  gid: ID\n  ts: AWSDateTime\n}\n\ntype Subscription {\n  onQuestionUpdate: Question\n    @aws_subscribe(mutations: [\"publishQuestion\"])\n}\n\ntype Mutation {\n  publishQuestion(id: ID!, txt: String!, stat: String!, gid: ID, ts: AWSDateTime): Question\n}\n\ntype Query {\n  listApproved: [Question]\n}\n",
+            "tags": {},
+            "tags_all": {},
+            "uris": {
+              "GRAPHQL": "https://an7wt4l3yvfr3fq2ndl3yekw74.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+              "REALTIME": "wss://an7wt4l3yvfr3fq2ndl3yekw74.appsync-realtime-api.ap-southeast-1.amazonaws.com/graphql"
+            },
+            "user_pool_config": [
+              {
+                "app_id_client_regex": "",
+                "aws_region": "ap-southeast-1",
+                "default_action": "ALLOW",
+                "user_pool_id": "ap-southeast-1_Zo62JX9jU"
+              }
+            ],
+            "visibility": "GLOBAL",
+            "xray_enabled": false
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.cognito.aws_cognito_user_pool.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.bedrock",
+      "mode": "data",
+      "type": "aws_iam_policy_document",
+      "name": "bedrock",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "187248088",
+            "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"bedrock:InvokeModel\",\n      \"Resource\": \"arn:aws:bedrock:*:*:foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0\"\n    }\n  ]\n}",
+            "minified_json": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"bedrock:InvokeModel\",\"Resource\":\"arn:aws:bedrock:*:*:foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0\"}]}",
+            "override_json": null,
+            "override_policy_documents": null,
+            "policy_id": null,
+            "source_json": null,
+            "source_policy_documents": null,
+            "statement": [
+              {
+                "actions": [
+                  "bedrock:InvokeModel"
+                ],
+                "condition": [],
+                "effect": "Allow",
+                "not_actions": [],
+                "not_principals": [],
+                "not_resources": [],
+                "principals": [],
+                "resources": [
+                  "arn:aws:bedrock:*:*:foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0"
+                ],
+                "sid": ""
+              }
+            ],
+            "version": "2012-10-17"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.cognito",
+      "mode": "managed",
+      "type": "aws_cognito_user_pool",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "account_recovery_setting": [
+              {
+                "recovery_mechanism": [
+                  {
+                    "name": "verified_email",
+                    "priority": 1
+                  },
+                  {
+                    "name": "verified_phone_number",
+                    "priority": 2
+                  }
+                ]
+              }
+            ],
+            "admin_create_user_config": [
+              {
+                "allow_admin_create_user_only": true,
+                "invite_message_template": []
+              }
+            ],
+            "alias_attributes": null,
+            "arn": "arn:aws:cognito-idp:ap-southeast-1:804887692450:userpool/ap-southeast-1_Zo62JX9jU",
+            "auto_verified_attributes": [],
+            "creation_date": "2026-05-02T07:59:57Z",
+            "custom_domain": "",
+            "deletion_protection": "INACTIVE",
+            "device_configuration": [],
+            "domain": "cnag-clouded-prod-franky-parcon-globe-com-ph",
+            "email_configuration": [
+              {
+                "configuration_set": "",
+                "email_sending_account": "COGNITO_DEFAULT",
+                "from_email_address": "",
+                "reply_to_email_address": "",
+                "source_arn": ""
+              }
+            ],
+            "email_mfa_configuration": [],
+            "email_verification_message": "",
+            "email_verification_subject": "",
+            "endpoint": "cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_Zo62JX9jU",
+            "estimated_number_of_users": 0,
+            "id": "ap-southeast-1_Zo62JX9jU",
+            "lambda_config": [],
+            "last_modified_date": "2026-05-02T07:59:57Z",
+            "mfa_configuration": "OFF",
+            "name": "cnag-clouded-prod-pool",
+            "password_policy": [
+              {
+                "minimum_length": 8,
+                "password_history_size": 0,
+                "require_lowercase": true,
+                "require_numbers": true,
+                "require_symbols": true,
+                "require_uppercase": true,
+                "temporary_password_validity_days": 7
+              }
+            ],
+            "schema": [],
+            "sign_in_policy": [
+              {
+                "allowed_first_auth_factors": [
+                  "PASSWORD"
+                ]
+              }
+            ],
+            "sms_authentication_message": "",
+            "sms_configuration": [],
+            "sms_verification_message": "",
+            "software_token_mfa_configuration": [],
+            "tags": {},
+            "tags_all": {},
+            "user_attribute_update_settings": [],
+            "user_pool_add_ons": [],
+            "user_pool_tier": "ESSENTIALS",
+            "username_attributes": [],
+            "username_configuration": [],
+            "verification_message_template": [
+              {
+                "default_email_option": "CONFIRM_WITH_CODE",
+                "email_message": "",
+                "email_message_by_link": "",
+                "email_subject": "",
+                "email_subject_by_link": "",
+                "sms_message": ""
+              }
+            ],
+            "web_authn_configuration": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.cognito",
+      "mode": "managed",
+      "type": "aws_cognito_user_pool_client",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "access_token_validity": 0,
+            "allowed_oauth_flows": [
+              "code",
+              "implicit"
+            ],
+            "allowed_oauth_flows_user_pool_client": true,
+            "allowed_oauth_scopes": [
+              "email",
+              "openid",
+              "profile"
+            ],
+            "analytics_configuration": [],
+            "auth_session_validity": 3,
+            "callback_urls": [
+              "http://localhost:5173",
+              "https://PENDING_CLOUDFRONT_DOMAIN"
+            ],
+            "client_secret": "",
+            "default_redirect_uri": "",
+            "enable_propagate_additional_user_context_data": false,
+            "enable_token_revocation": true,
+            "explicit_auth_flows": [],
+            "generate_secret": false,
+            "id": "3c7kvhjv88s062jp7nje9dusrm",
+            "id_token_validity": 0,
+            "logout_urls": [],
+            "name": "cnag-clouded-prod-client",
+            "prevent_user_existence_errors": "",
+            "read_attributes": [],
+            "refresh_token_rotation": [],
+            "refresh_token_validity": 30,
+            "supported_identity_providers": [
+              "COGNITO"
+            ],
+            "token_validity_units": [],
+            "user_pool_id": "ap-southeast-1_Zo62JX9jU",
+            "write_attributes": []
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "client_secret"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "dependencies": [
+            "module.cognito.aws_cognito_user_pool.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.cognito",
+      "mode": "managed",
+      "type": "aws_cognito_user_pool_domain",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "aws_account_id": "804887692450",
+            "certificate_arn": "",
+            "cloudfront_distribution": "d3ownpzpj4jdb9.cloudfront.net",
+            "cloudfront_distribution_arn": "d3ownpzpj4jdb9.cloudfront.net",
+            "cloudfront_distribution_zone_id": "Z2FDTNDATAQYW2",
+            "domain": "cnag-clouded-prod-franky-parcon-globe-com-ph",
+            "id": "cnag-clouded-prod-franky-parcon-globe-com-ph",
+            "managed_login_version": 1,
+            "s3_bucket": "aws-cognito-prod-sin-assets",
+            "user_pool_id": "ap-southeast-1_Zo62JX9jU",
+            "version": "20260502075958"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.cognito.aws_cognito_user_pool.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.lambda",
+      "mode": "data",
+      "type": "aws_caller_identity",
+      "name": "current",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "account_id": "804887692450",
+            "arn": "arn:aws:iam::804887692450:root",
+            "id": "804887692450",
+            "user_id": "804887692450"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.lambda",
+      "mode": "data",
+      "type": "aws_subnets",
+      "name": "default",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "filter": [
+              {
+                "name": "vpc-id",
+                "values": [
+                  "vpc-06cb2fce8671f3fd7"
+                ]
+              }
+            ],
+            "id": "ap-southeast-1",
+            "ids": [
+              "subnet-0be19f14aa9fe2bc5",
+              "subnet-0cf304761a8a804cb",
+              "subnet-06725c95a15fd0a2e"
+            ],
+            "tags": null,
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.lambda",
+      "mode": "data",
+      "type": "aws_vpc",
+      "name": "default",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:804887692450:vpc/vpc-06cb2fce8671f3fd7",
+            "cidr_block": "172.31.0.0/16",
+            "cidr_block_associations": [
+              {
+                "association_id": "vpc-cidr-assoc-04241454ef7317989",
+                "cidr_block": "172.31.0.0/16",
+                "state": "associated"
+              }
+            ],
+            "default": true,
+            "dhcp_options_id": "dopt-06b02bcc0fc6e85ca",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "enable_network_address_usage_metrics": false,
+            "filter": null,
+            "id": "vpc-06cb2fce8671f3fd7",
+            "instance_tenancy": "default",
+            "ipv6_association_id": "",
+            "ipv6_cidr_block": "",
+            "main_route_table_id": "rtb-0be49c7d48600cacf",
+            "owner_id": "804887692450",
+            "state": null,
+            "tags": {},
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.lambda",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "appsync",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::804887692450:role/cnag-clouded-prod-appsync-role",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"appsync.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2026-05-02T07:59:56Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "cnag-clouded-prod-appsync-role",
+            "inline_policy": [],
+            "managed_policy_arns": [],
+            "max_session_duration": 3600,
+            "name": "cnag-clouded-prod-appsync-role",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {},
+            "tags_all": {},
+            "unique_id": "AROA3WZYLQSRDCHTQZ4LU"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.lambda",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "lambda",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::804887692450:role/cnag-clouded-prod-lambda-role",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2026-05-02T07:59:57Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "cnag-clouded-prod-lambda-role",
+            "inline_policy": [
+              {
+                "name": "cnag-clouded-prod-lambda-policy",
+                "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:logs:*:*:*\"},{\"Action\":[\"rds-db:connect\",\"ec2:CreateNetworkInterface\",\"ec2:DescribeNetworkInterfaces\",\"ec2:DeleteNetworkInterface\"],\"Effect\":\"Allow\",\"Resource\":\"*\"},{\"Action\":\"bedrock:InvokeModel\",\"Effect\":\"Allow\",\"Resource\":\"arn:aws:bedrock:*:*:foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0\"},{\"Action\":\"appsync:GraphQL\",\"Effect\":\"Allow\",\"Resource\":\"arn:aws:appsync:ap-southeast-1:804887692450:apis/5obmfc6w6jbr5fevorn5fu2me4/*\"}]}"
+              }
+            ],
+            "managed_policy_arns": [],
+            "max_session_duration": 3600,
+            "name": "cnag-clouded-prod-lambda-role",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {},
+            "tags_all": {},
+            "unique_id": "AROA3WZYLQSRCHBVGYS34"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.lambda",
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "lambda",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "cnag-clouded-prod-lambda-role:cnag-clouded-prod-lambda-policy",
+            "name": "cnag-clouded-prod-lambda-policy",
+            "name_prefix": "",
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:logs:*:*:*\"},{\"Action\":[\"rds-db:connect\",\"ec2:CreateNetworkInterface\",\"ec2:DescribeNetworkInterfaces\",\"ec2:DeleteNetworkInterface\"],\"Effect\":\"Allow\",\"Resource\":\"*\"},{\"Action\":\"bedrock:InvokeModel\",\"Effect\":\"Allow\",\"Resource\":\"arn:aws:bedrock:*:*:foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0\"},{\"Action\":\"appsync:GraphQL\",\"Effect\":\"Allow\",\"Resource\":\"arn:aws:appsync:ap-southeast-1:804887692450:apis/5obmfc6w6jbr5fevorn5fu2me4/*\"}]}",
+            "role": "cnag-clouded-prod-lambda-role"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.appsync.aws_appsync_graphql_api.main",
+            "module.cognito.aws_cognito_user_pool.main",
+            "module.lambda.aws_iam_role.lambda"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.rds",
+      "mode": "data",
+      "type": "aws_subnets",
+      "name": "default",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "filter": [
+              {
+                "name": "vpc-id",
+                "values": [
+                  "vpc-06cb2fce8671f3fd7"
+                ]
+              }
+            ],
+            "id": "ap-southeast-1",
+            "ids": [
+              "subnet-0be19f14aa9fe2bc5",
+              "subnet-0cf304761a8a804cb",
+              "subnet-06725c95a15fd0a2e"
+            ],
+            "tags": null,
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.rds",
+      "mode": "data",
+      "type": "aws_vpc",
+      "name": "default",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:804887692450:vpc/vpc-06cb2fce8671f3fd7",
+            "cidr_block": "172.31.0.0/16",
+            "cidr_block_associations": [
+              {
+                "association_id": "vpc-cidr-assoc-04241454ef7317989",
+                "cidr_block": "172.31.0.0/16",
+                "state": "associated"
+              }
+            ],
+            "default": true,
+            "dhcp_options_id": "dopt-06b02bcc0fc6e85ca",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "enable_network_address_usage_metrics": false,
+            "filter": null,
+            "id": "vpc-06cb2fce8671f3fd7",
+            "instance_tenancy": "default",
+            "ipv6_association_id": "",
+            "ipv6_cidr_block": "",
+            "main_route_table_id": "rtb-0be49c7d48600cacf",
+            "owner_id": "804887692450",
+            "state": null,
+            "tags": {},
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.rds",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 2,
+          "attributes": {
+            "address": "seminar-qa-prod-db.cj02iicikub7.ap-southeast-1.rds.amazonaws.com",
+            "allocated_storage": 20,
+            "allow_major_version_upgrade": null,
+            "apply_immediately": false,
+            "arn": "arn:aws:rds:ap-southeast-1:804887692450:db:seminar-qa-prod-db",
+            "auto_minor_version_upgrade": true,
+            "availability_zone": "ap-southeast-1b",
+            "backup_retention_period": 0,
+            "backup_target": "region",
+            "backup_window": "19:57-20:27",
+            "blue_green_update": [],
+            "ca_cert_identifier": "rds-ca-rsa2048-g1",
+            "character_set_name": "",
+            "copy_tags_to_snapshot": false,
+            "custom_iam_instance_profile": "",
+            "customer_owned_ip_enabled": false,
+            "database_insights_mode": "standard",
+            "db_name": "qa_db",
+            "db_subnet_group_name": "seminar-qa-prod-db-subnet",
+            "dedicated_log_volume": false,
+            "delete_automated_backups": true,
+            "deletion_protection": false,
+            "domain": "",
+            "domain_auth_secret_arn": "",
+            "domain_dns_ips": [],
+            "domain_fqdn": "",
+            "domain_iam_role_name": "",
+            "domain_ou": "",
+            "enabled_cloudwatch_logs_exports": [],
+            "endpoint": "seminar-qa-prod-db.cj02iicikub7.ap-southeast-1.rds.amazonaws.com:5432",
+            "engine": "postgres",
+            "engine_lifecycle_support": "open-source-rds-extended-support",
+            "engine_version": "15",
+            "engine_version_actual": "15.17",
+            "final_snapshot_identifier": null,
+            "hosted_zone_id": "Z2G0U3KFCY8NZ5",
+            "iam_database_authentication_enabled": false,
+            "id": "db-SLJHJHLMAQA5WAL7PJ74H2UQDI",
+            "identifier": "seminar-qa-prod-db",
+            "identifier_prefix": "",
+            "instance_class": "db.t3.micro",
+            "iops": 0,
+            "kms_key_id": "arn:aws:kms:ap-southeast-1:804887692450:key/fc337408-d7db-49a7-bcc5-a2263c5c29bd",
+            "latest_restorable_time": "",
+            "license_model": "postgresql-license",
+            "listener_endpoint": [],
+            "maintenance_window": "thu:20:38-thu:21:08",
+            "manage_master_user_password": null,
+            "master_user_secret": [],
+            "master_user_secret_kms_key_id": null,
+            "max_allocated_storage": 0,
+            "monitoring_interval": 0,
+            "monitoring_role_arn": "",
+            "multi_az": false,
+            "nchar_character_set_name": "",
+            "network_type": "IPV4",
+            "option_group_name": "default:postgres-15",
+            "parameter_group_name": "default.postgres15",
+            "password": "actual_secure_password_123",
+            "password_wo": null,
+            "password_wo_version": null,
+            "performance_insights_enabled": false,
+            "performance_insights_kms_key_id": "",
+            "performance_insights_retention_period": 0,
+            "port": 5432,
+            "publicly_accessible": false,
+            "replica_mode": "",
+            "replicas": [],
+            "replicate_source_db": "",
+            "resource_id": "db-SLJHJHLMAQA5WAL7PJ74H2UQDI",
+            "restore_to_point_in_time": [],
+            "s3_import": [],
+            "skip_final_snapshot": false,
+            "snapshot_identifier": null,
+            "status": "available",
+            "storage_encrypted": true,
+            "storage_throughput": 0,
+            "storage_type": "gp2",
+            "tags": {},
+            "tags_all": {},
+            "timeouts": null,
+            "timezone": "",
+            "upgrade_storage_config": null,
+            "username": "qa_user",
+            "vpc_security_group_ids": [
+              "sg-06589c50f6c96f1e8"
+            ]
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "password"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "password_wo"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAwLCJkZWxldGUiOjM2MDAwMDAwMDAwMDAsInVwZGF0ZSI6NDgwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "module.rds.aws_db_subnet_group.main",
+            "module.rds.aws_security_group.rds",
+            "module.rds.data.aws_subnets.default",
+            "module.rds.data.aws_vpc.default"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.rds",
+      "mode": "managed",
+      "type": "aws_db_subnet_group",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:rds:ap-southeast-1:804887692450:subgrp:seminar-qa-prod-db-subnet",
+            "description": "Managed by Terraform",
+            "id": "seminar-qa-prod-db-subnet",
+            "name": "seminar-qa-prod-db-subnet",
+            "name_prefix": "",
+            "subnet_ids": [
+              "subnet-06725c95a15fd0a2e",
+              "subnet-0be19f14aa9fe2bc5",
+              "subnet-0cf304761a8a804cb"
+            ],
+            "supported_network_types": [
+              "IPV4"
+            ],
+            "tags": {},
+            "tags_all": {},
+            "vpc_id": "vpc-06cb2fce8671f3fd7"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.rds.data.aws_subnets.default",
+            "module.rds.data.aws_vpc.default"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.rds",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "rds",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:804887692450:security-group/sg-06589c50f6c96f1e8",
+            "description": "Allow PostgreSQL from Lambda",
+            "egress": [],
+            "id": "sg-06589c50f6c96f1e8",
+            "ingress": [],
+            "name": "seminar-qa-prod-rds-sg",
+            "name_prefix": "",
+            "owner_id": "804887692450",
+            "revoke_rules_on_delete": false,
+            "tags": {},
+            "tags_all": {},
+            "timeouts": null,
+            "vpc_id": "vpc-06cb2fce8671f3fd7"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0="
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
