@@ -1,122 +1,143 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://localhost:5000/api';
+const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const ADMIN_PASS = 'localadmin123';
 
 function Admin() {
-  const [pendingQuestions, setPendingQuestions] = useState([]);
-  const [error, setError] = useState('');
+  const [pending, setPending] = useState([]);
+  const [approved, setApproved] = useState([]);
+  const [password, setPassword] = useState('');
+  const [authenticated, setAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/login');
-      return;
+    const stored = localStorage.getItem('adminAuth');
+    if (stored === 'true') {
+      setAuthenticated(true);
+      fetchQuestions();
     }
+  }, []);
 
-    fetchPendingQuestions(token);
-  }, [navigate]);
+  const fetchQuestions = async () => {
+    const headers = { 'x-admin-password': ADMIN_PASS };
+    const [pendingRes, approvedRes] = await Promise.all([
+      fetch(`${VITE_API_URL}/questions/pending`, { headers }),
+      fetch(`${VITE_API_URL}/questions/approved`, { headers })
+    ]);
+    if (pendingRes.ok) setPending(await pendingRes.json());
+    if (approvedRes.ok) setApproved(await approvedRes.json());
+  };
 
-  const fetchPendingQuestions = async (token) => {
-    try {
-      const res = await fetch(`${API_URL}/admin/questions/pending`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('adminToken');
-        navigate('/login');
-        return;
-      }
-
-      const data = await res.json();
-      setPendingQuestions(data);
-    } catch (err) {
-      setError('Failed to load questions');
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (password === ADMIN_PASS) {
+      localStorage.setItem('adminAuth', 'true');
+      setAuthenticated(true);
+      fetchQuestions();
+    } else {
+      alert('Invalid password');
     }
   };
 
   const handleApprove = async (id) => {
-    const token = localStorage.getItem('adminToken');
-    try {
-      const res = await fetch(`${API_URL}/admin/questions/approve/${id}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+    await fetch(`${VITE_API_URL}/questions/approve/${id}`, {
+      method: 'POST',
+      headers: { 'x-admin-password': ADMIN_PASS }
+    });
+    fetchQuestions();
+  };
 
-      if (res.ok) {
-        setPendingQuestions((prev) => prev.filter((q) => q.id !== id));
-      }
-    } catch (err) {
-      setError('Failed to approve question');
-    }
+  const handleHide = async (id) => {
+    await fetch(`${VITE_API_URL}/questions/hide/${id}`, {
+      method: 'POST',
+      headers: { 'x-admin-password': ADMIN_PASS }
+    });
+    fetchQuestions();
   };
 
   const handleDelete = async (id) => {
-    const token = localStorage.getItem('adminToken');
-    try {
-      const res = await fetch(`${API_URL}/admin/questions/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        setPendingQuestions((prev) => prev.filter((q) => q.id !== id));
-      }
-    } catch (err) {
-      setError('Failed to delete question');
-    }
+    await fetch(`${VITE_API_URL}/questions/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': ADMIN_PASS }
+    });
+    fetchQuestions();
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminAuth');
+    setAuthenticated(false);
     navigate('/');
   };
 
+  if (!authenticated) {
+    return (
+      <div className="container">
+        <div className="card max-w-md mx-auto mt-20">
+          <h1 className="text-xl font-bold mb-4">Admin Login</h1>
+          <form onSubmit={handleLogin}>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter admin password"
+              className="w-full p-3 border rounded mb-4"
+            />
+            <button type="submit" className="btn w-full">Login</button>
+          </form>
+          <Link to="/" className="text-blue-600 hover:underline mt-4 block">Back to Site</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container">
-      <div className="nav">
-        <h1>Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <div>
-          <Link to="/" style={{ marginRight: '16px' }}>Back to Site</Link>
-          <button onClick={handleLogout} style={{ background: '#6c757d' }}>
-            Logout
-          </button>
+          <Link to="/" className="text-blue-600 hover:underline mr-4">Back to Site</Link>
+          <button onClick={handleLogout} className="btn bg-gray-600">Logout</button>
         </div>
       </div>
 
-      <div className="form-container">
-        <h2>Pending Questions ({pendingQuestions.length})</h2>
-        {pendingQuestions.length === 0 ? (
-          <p>No pending questions.</p>
-        ) : (
-          <div className="questions-list">
-            {pendingQuestions.map((q) => (
-              <div key={q.id} className="question-card pending">
-                <p>{q.text}</p>
-                <small>Submitted: {new Date(q.createdAt).toLocaleString()}</small>
-                <div className="question-actions">
-                  <button
-                    className="btn-approve"
-                    onClick={() => handleApprove(q.id)}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="btn-delete"
-                    onClick={() => handleDelete(q.id)}
-                  >
-                    Delete
-                  </button>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="card">
+          <h2 className="text-lg font-semibold mb-4">Pending ({pending.length})</h2>
+          {pending.length === 0 ? (
+            <p className="text-gray-500">No pending questions.</p>
+          ) : (
+            <div className="space-y-3">
+              {pending.map((q) => (
+                <div key={q.id} className="p-4 bg-yellow-50 rounded border-l-4 border-yellow-500">
+                  <p>{q.txt}</p>
+                  <div className="mt-2 space-x-2">
+                    <button onClick={() => handleApprove(q.id)} className="btn btn-approve text-sm">Approve</button>
+                    <button onClick={() => handleHide(q.id)} className="btn btn-hide text-sm">Hide</button>
+                    <button onClick={() => handleDelete(q.id)} className="btn btn-delete text-sm">Delete</button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-      {error && <div className="toast">{error}</div>}
+        <div className="card">
+          <h2 className="text-lg font-semibold mb-4">Approved ({approved.length})</h2>
+          {approved.length === 0 ? (
+            <p className="text-gray-500">No approved questions.</p>
+          ) : (
+            <div className="space-y-3">
+              {approved.map((q) => (
+                <div key={q.id} className="p-4 bg-green-50 rounded border-l-4 border-green-500">
+                  <p>{q.txt}</p>
+                  <small className="text-gray-500">{new Date(q.ts).toLocaleString()}</small>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
