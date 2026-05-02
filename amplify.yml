@@ -20,3 +20,5 @@ applications:
         paths:
           - node_modules/**/*
           - ~/.npm
+      environmentVariables:
+        VITE_API_URL: 'https://eepdc4xkc4lm7mhiudfhbc3vvy0ismrz.lambda-url.ap-southeast-1.on.aws'
