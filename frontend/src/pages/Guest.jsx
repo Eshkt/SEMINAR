@@ -1,33 +1,44 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useRealtimeQuestions } from '../hooks/useRealtimeQuestions';
 
-const API_URL = 'http://localhost:5000/api';
+const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function Guest() {
-  const [question, setQuestion] = useState('');
+  const [text, setText] = useState('');
   const [myQuestion, setMyQuestion] = useState(null);
-  const [liveQuestions, setLiveQuestions] = useState([]);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [questions, setQuestions] = useRealtimeQuestions([]);
 
-  const fetchLiveQuestions = async () => {
+  const fetchQuestions = async () => {
     try {
-      const res = await fetch(`${API_URL}/questions`);
+      const res = await fetch(`${VITE_API_URL}/questions/approved`);
       const data = await res.json();
-      setLiveQuestions(data);
+      setQuestions(data.map(q => ({ ...q, status: 'approved' })));
     } catch (err) {
       console.error('Failed to fetch questions:', err);
     }
   };
 
   const fetchMyQuestion = async () => {
-    const stored = localStorage.getItem('myQuestionId');
-    if (stored) {
+    const id = localStorage.getItem('myQuestionId');
+    if (id) {
       try {
-        const res = await fetch(`${API_URL}/questions/${stored}`);
-        if (res.ok) {
-          const data = await res.json();
-          setMyQuestion(data);
+        const res = await fetch(`${VITE_API_URL}/questions/approved`);
+        const data = await res.json();
+        const q = data.find(x => x.id === id);
+        if (q) setMyQuestion({ ...q, status: 'approved' });
+        else {
+          // Check pending
+          const pendingRes = await fetch(`${VITE_API_URL}/questions/pending`, {
+            headers: { 'x-admin-password': 'localadmin123' }
+          });
+          if (pendingRes.ok) {
+            const pending = await pendingRes.json();
+            const p = pending.find(x => x.id === id);
+            if (p) setMyQuestion({ ...p, status: 'pending' });
+          }
         }
       } catch (err) {
         console.error('Failed to fetch my question:', err);
@@ -36,13 +47,8 @@ function Guest() {
   };
 
   useEffect(() => {
-    fetchLiveQuestions();
+    fetchQuestions();
     fetchMyQuestion();
-    const interval = setInterval(() => {
-      fetchLiveQuestions();
-      fetchMyQuestion();
-    }, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleSubmit = async (e) => {
@@ -50,28 +56,31 @@ function Guest() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/questions`, {
+      const res = await fetch(`${VITE_API_URL}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: question })
+        body: JSON.stringify({ text })
       });
 
       const data = await res.json();
 
       if (res.ok) {
         localStorage.setItem('myQuestionId', data.id);
-        setMyQuestion(data);
-        setQuestion('');
-        fetchLiveQuestions();
-      } else if (res.status === 400 && data.error === 'Profanity detected') {
-        setToast(data.message);
+        setMyQuestion({ ...data, status: 'pending' });
+        setText('');
+        fetchQuestions();
+      } else if (data.error === 'PROFANITY') {
+        setToast('Please keep your questions professional');
+        setTimeout(() => setToast(null), 3000);
+      } else if (data.error === 'TOO_LONG') {
+        setToast('Question must be under 280 characters');
         setTimeout(() => setToast(null), 3000);
       } else {
-        setToast(data.error || 'Failed to submit question');
+        setToast(data.error || 'Failed to submit');
         setTimeout(() => setToast(null), 3000);
       }
     } catch (err) {
-      setToast('Network error. Please try again.');
+      setToast('Network error');
       setTimeout(() => setToast(null), 3000);
     } finally {
       setLoading(false);
@@ -80,48 +89,53 @@ function Guest() {
 
   return (
     <div className="container">
-      <div className="nav">
-        <h1>Q&A Session</h1>
-        <Link to="/admin">Admin Login</Link>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Q&A Session</h1>
+        <Link to="/admin" className="text-blue-600 hover:underline">Admin</Link>
       </div>
 
-      <div className="form-container">
-        <h2>Submit Your Question</h2>
+      <div className="card">
+        <h2 className="text-lg font-semibold mb-4">Submit Your Question</h2>
         <form onSubmit={handleSubmit}>
           <textarea
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
             placeholder="Type your anonymous question here..."
+            className="w-full min-h-[100px] p-3 border rounded mb-3"
+            maxLength={280}
             disabled={loading}
           />
-          <button type="submit" disabled={loading || !question.trim()}>
-            {loading ? 'Submitting...' : 'Submit Question'}
-          </button>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">{text.length}/280</span>
+            <button type="submit" disabled={loading || !text.trim()} className="btn">
+              {loading ? 'Submitting...' : 'Submit'}
+            </button>
+          </div>
         </form>
       </div>
 
       {myQuestion && (
-        <div className="form-container">
-          <h2>Your Question Status</h2>
-          <div className={`question-card ${myQuestion.status}`}>
-            <p>{myQuestion.text}</p>
-            <span className={`status-badge status-${myQuestion.status}`}>
-              {myQuestion.status === 'pending' ? 'Pending Approval' : 'Live'}
+        <div className="card">
+          <h2 className="text-lg font-semibold mb-4">Your Question</h2>
+          <div className="p-4 bg-gray-100 rounded">
+            <p>{myQuestion.txt}</p>
+            <span className={`badge badge-${myQuestion.stat || 'pending'}`}>
+              {myQuestion.stat === 'apprv' ? 'Live' : 'Pending Approval'}
             </span>
           </div>
         </div>
       )}
 
-      <div className="form-container">
-        <h2>Live Questions</h2>
-        {liveQuestions.length === 0 ? (
-          <p>No questions yet. Be the first to ask!</p>
+      <div className="card">
+        <h2 className="text-lg font-semibold mb-4">Live Questions</h2>
+        {questions.length === 0 ? (
+          <p className="text-gray-500">No questions yet.</p>
         ) : (
-          <div className="questions-list">
-            {liveQuestions.map((q) => (
-              <div key={q.id} className="question-card approved">
-                <p>{q.text}</p>
-                <small>Upvotes: {q.upvotes}</small>
+          <div className="space-y-3">
+            {questions.map((q) => (
+              <div key={q.id} className="p-4 bg-gray-50 rounded">
+                <p>{q.txt}</p>
+                <small className="text-gray-500">{new Date(q.ts).toLocaleString()}</small>
               </div>
             ))}
           </div>
