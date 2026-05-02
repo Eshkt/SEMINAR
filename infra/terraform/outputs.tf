@@ -4,9 +4,15 @@ output "rds_endpoint" {
 }
 
 output "lambda_url" {
-  description = "Lambda function URL"
+  description = "Lambda Function URL"
   value       = module.lambda.function_url
 }
+
+output "amplify_url" {
+  description = "Frontend Amplify URL"
+  value       = module.amplify.branch_url
+}
+
 
 output "appsync_url" {
   description = "AppSync GraphQL API URL"

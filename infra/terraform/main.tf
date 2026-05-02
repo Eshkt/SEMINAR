@@ -62,3 +62,17 @@ module "lambda" {
   cognito_client_id    = module.cognito.client_id
   lambda_zip_path      = "${path.module}/../../backend/lambda.zip"
 }
+
+module "amplify" {
+  source      = "./modules/amplify"
+  app_name    = var.app_name
+  environment = var.environment
+  repository  = "https://gitlab.com/franky.parcon/qna-web-app"
+  access_token = var.gitlab_access_token
+  branch_name  = "feature/deployment"
+
+  vite_api_url              = module.lambda.function_url
+  vite_appsync_url          = module.appsync.graphql_url
+  vite_cognito_user_pool_id  = module.cognito.user_pool_id
+  vite_cognito_client_id     = module.cognito.client_id
+}

@@ -1,3 +1,4 @@
+
 variable "aws_region" {
   description = "AWS region"
   type        = string
@@ -25,4 +26,10 @@ variable "environment" {
   description = "Environment name"
   type        = string
   default     = "prod"
+}
+
+variable "gitlab_access_token" {
+  description = "GitLab Personal Access Token"
+  type        = string
+  sensitive   = true
 }
