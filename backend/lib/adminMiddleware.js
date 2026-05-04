@@ -3,7 +3,10 @@
 // lambda: verify Cognito JWT
 const { CognitoJwtVerifier } = require('aws-jwt-verify');
 
-const ADMIN_PASS = process.env.ADMIN_PASS || 'localadmin123';
+const ADMIN_PASS = process.env.ADMIN_PASS;
+if (!ADMIN_PASS) {
+  console.error('ADMIN_PASS environment variable not set');
+}
 const RUNTIME = process.env.RUNTIME;
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const CLIENT_ID = process.env.COGNITO_CLIENT_ID;
