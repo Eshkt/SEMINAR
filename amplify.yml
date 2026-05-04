@@ -11,7 +11,8 @@ applications:
             - npm ci
         build:
           commands:
-            - export VITE_API_URL='https://eepdc4xkc4lm7mhiudfhbc3vvy0ismrz.lambda-url.ap-southeast-1.on.aws'
+            - export VITE_API_URL="${VITE_API_URL}"
+            - export VITE_ADMIN_PASS="${VITE_ADMIN_PASS}"
             - npm run build
             - echo "/* /index.html 200" > dist/_redirects
       artifacts:

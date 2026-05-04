@@ -36,6 +36,11 @@ variable "vite_cognito_client_id" {
   type = string
 }
 
+variable "vite_admin_pass" {
+  type      = string
+  sensitive = true
+}
+
 resource "aws_amplify_app" "main" {
   name       = var.app_name
   repository = var.repository
@@ -65,9 +70,10 @@ resource "aws_amplify_app" "main" {
 
   environment_variables = {
     VITE_API_URL              = var.vite_api_url
-    VITE_APPSYNC_URL           = var.vite_appsync_url
-    VITE_COGNITO_USER_POOL_ID  = var.vite_cognito_user_pool_id
-    VITE_COGNITO_CLIENT_ID     = var.vite_cognito_client_id
+    VITE_APPSYNC_URL          = var.vite_appsync_url
+    VITE_COGNITO_USER_POOL_ID = var.vite_cognito_user_pool_id
+    VITE_COGNITO_CLIENT_ID    = var.vite_cognito_client_id
+    VITE_ADMIN_PASS           = var.vite_admin_pass
   }
 
   # For Single Page App (SPA) routing

@@ -6,6 +6,15 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  # S3 backend for remote state with locking (DynamoDB)
+  backend "s3" {
+    bucket         = "sem-qna-terraform-state"
+    key            = "infrastructure/terraform.tfstate"
+    region         = "ap-southeast-1"
+    encrypt        = true
+    dynamodb_table = "sem-qna-terraform-lock"
+  }
 }
 
 provider "aws" {
@@ -76,4 +85,5 @@ module "amplify" {
   vite_appsync_url          = module.appsync.graphql_url
   vite_cognito_user_pool_id  = module.cognito.user_pool_id
   vite_cognito_client_id     = module.cognito.client_id
+  vite_admin_pass            = var.admin_password
 }
