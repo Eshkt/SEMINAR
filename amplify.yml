@@ -1,14 +1,12 @@
 version: 1
 applications:
-  - appRoot: frontend
-    frontend:
+  - frontend:
       runtime:
         name: nodejs
         version: 20
       phases:
         preBuild:
           commands:
-            - rm -rf dist
             - npm ci
         build:
           commands:
@@ -16,7 +14,7 @@ applications:
             - export VITE_ADMIN_PASS="${VITE_ADMIN_PASS}"
             - npm run build
       artifacts:
-        baseDirectory: frontend/dist
+        baseDirectory: dist
         files:
           - '**/*'
       cache:
