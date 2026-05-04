@@ -5,12 +5,12 @@ Parameters:
   BucketName:
     Type: String
     Description: S3 bucket name (must be globally unique)
-    Default: qna-web-app-2026
+    Default: cnag-aws-qna
 
   Region:
     Type: String
     Description: AWS Region
-    Default: us-east-1
+    Default: ap-southeast-1
 
 Resources:
   # S3 Bucket
