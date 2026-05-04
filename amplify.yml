@@ -8,6 +8,7 @@ applications:
       phases:
         preBuild:
           commands:
+            - rm -rf dist
             - npm ci
         build:
           commands:
