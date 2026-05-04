@@ -15,9 +15,8 @@ applications:
             - export VITE_API_URL="${VITE_API_URL}"
             - export VITE_ADMIN_PASS="${VITE_ADMIN_PASS}"
             - npm run build
-            - echo "/* /index.html 200" > dist/_redirects
       artifacts:
-        baseDirectory: dist
+        baseDirectory: frontend/dist
         files:
           - '**/*'
       cache:
