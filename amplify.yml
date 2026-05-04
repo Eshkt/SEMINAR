@@ -13,6 +13,7 @@ applications:
             - export VITE_API_URL="${VITE_API_URL}"
             - export VITE_ADMIN_PASS="${VITE_ADMIN_PASS}"
             - npm run build --prefix frontend
+            - echo "/* /index.html 200" > frontend/dist/_redirects
       artifacts:
         baseDirectory: frontend/dist
         files:
