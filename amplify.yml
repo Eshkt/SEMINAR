@@ -7,12 +7,12 @@ applications:
       phases:
         preBuild:
           commands:
-            - cd frontend && npm install
+            - npm install --prefix frontend
         build:
           commands:
             - export VITE_API_URL="${VITE_API_URL}"
             - export VITE_ADMIN_PASS="${VITE_ADMIN_PASS}"
-            - npm run build
+            - npm run build --prefix frontend
       artifacts:
         baseDirectory: dist
         files:
