@@ -14,7 +14,7 @@ applications:
             - export VITE_ADMIN_PASS="${VITE_ADMIN_PASS}"
             - npm run build --prefix frontend
       artifacts:
-        baseDirectory: dist
+        baseDirectory: frontend/dist
         files:
           - '**/*'
       cache:
