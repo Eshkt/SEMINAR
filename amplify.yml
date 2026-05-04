@@ -7,7 +7,7 @@ applications:
       phases:
         preBuild:
           commands:
-            - npm ci
+            - cd frontend && npm install
         build:
           commands:
             - export VITE_API_URL="${VITE_API_URL}"
