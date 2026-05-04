@@ -18,6 +18,14 @@ applications:
         baseDirectory: frontend/dist
         files:
           - '**/*'
+        config:
+          cacheControl:
+            - path: '**/*.html'
+              headers:
+                Cache-Control: 'no-cache, no-store, must-revalidate'
+            - path: '**/*.js'
+              headers:
+                Cache-Control: 'max-age=31536000, immutable'
       cache:
         paths:
           - node_modules/**/*
