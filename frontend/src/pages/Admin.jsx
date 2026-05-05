@@ -26,38 +26,47 @@ function AdminContent() {
 
   const getHeaders = async () => {
     if (VITE_RUNTIME === 'lambda') {
-      const { tokens } = await fetchAuthSession();
-      if (!tokens?.idToken) {
+      const session = await fetchAuthSession();
+      console.log('[TOKEN] session:', session);
+      console.log('[TOKEN] tokens:', session?.tokens);
+      console.log('[TOKEN] idToken:', session?.tokens?.idToken);
+      console.log('[TOKEN] idToken string:', session?.tokens?.idToken?.toString());
+      
+      const token = session?.tokens?.idToken?.toString();
+      if (!token) {
         throw new Error('No ID token available. Please sign in again.');
       }
-      return {
-        'Authorization': `Bearer ${tokens.idToken.toString()}`
+      
+      const headers = {
+        'Authorization': `Bearer ${token}`
       };
+      console.log('[HEADER] Authorization header being sent:', headers.Authorization);
+      return headers;
     }
     return { 'x-admin-password': ADMIN_PASS };
   };
 
   const fetchQuestions = async () => {
+    // Only block the mount-level fetch, allow manual refreshes
     setLoading(true);
     try {
       console.log('[DEBUG] Starting fetchQuestions...');
       // Safety delay for Amplify init
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 800));
 
       const headers = await getHeaders();
-      console.log('[DEBUG] Headers obtained:', headers.Authorization ? 'Auth present' : 'Auth missing');
       
       const [pendingRes, approvedRes] = await Promise.all([
         fetch(`${VITE_API_URL}/questions/pending`, { headers }),
         fetch(`${VITE_API_URL}/questions/approved`, { headers })
       ]);
 
-      console.log('[DEBUG] Pending status:', pendingRes.status, 'Approved status:', approvedRes.status);
+      console.log('[DEBUG] Status codes:', pendingRes.status, approvedRes.status);
 
       if (pendingRes.status === 401 || approvedRes.status === 401) {
         console.error('[DEBUG] 401 Unauthorized detected');
         setError('Session expired or unauthorized. Please refresh the page or sign in again.');
-        return;
+        return; // STOP HERE - No more state changes that trigger fetch
       }
 
       if (pendingRes.ok) {
