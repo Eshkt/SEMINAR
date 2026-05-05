@@ -41,12 +41,12 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_security_group_rule" "ingress" {
-  type                     = "ingress"
-  from_port                = 5432
-  to_port                  = 5432
-  protocol                 = "tcp"
-  source_security_group_id = var.lambda_security_group_id
-  security_group_id        = aws_security_group.rds.id
+  type              = "ingress"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.rds.id
 }
 
 resource "aws_db_instance" "main" {
@@ -63,4 +63,6 @@ resource "aws_db_instance" "main" {
   allocated_storage         = 20
   db_subnet_group_name      = aws_db_subnet_group.main.name
   vpc_security_group_ids    = [aws_security_group.rds.id]
+  publicly_accessible       = true
 }
+

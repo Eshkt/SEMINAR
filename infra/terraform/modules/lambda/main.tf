@@ -138,25 +138,10 @@ resource "aws_lambda_function" "main" {
       RUNTIME              = "lambda"
     }
   }
-
-  vpc_config {
-    subnet_ids         = data.aws_subnets.default.ids
-    security_group_ids = [var.security_group_id]
-  }
-}
-
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
-data "aws_vpc" "default" {
-  default = true
 }
 
 resource "aws_lambda_function_url" "main" {
+
   function_name      = aws_lambda_function.main.function_name
   authorization_type = "NONE"
 }

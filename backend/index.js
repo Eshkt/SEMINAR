@@ -41,7 +41,8 @@ app.get('/health', (req, res) => {
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
-  message: { error: 'Rate limit exceeded' }
+  message: { error: 'Rate limit exceeded' },
+  keyGenerator: (req) => req.ip || 'unknown'
 });
 app.use(limiter);
 
