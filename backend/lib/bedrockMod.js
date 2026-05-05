@@ -47,8 +47,13 @@ Reply ONLY with a JSON object:
     const response = await client.send(command);
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
     
-    // Extract the JSON from the assistant's response
-    const resultText = responseBody.content[0].text;
+    // Extract the JSON from the assistant's response - handle potential extra text
+    let resultText = responseBody.content[0].text.trim();
+    const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      resultText = jsonMatch[0];
+    }
+    
     return JSON.parse(resultText);
   } catch (error) {
     console.error('Bedrock Moderation Error:', error);

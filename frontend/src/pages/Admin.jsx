@@ -25,8 +25,14 @@ function Admin() {
       fetch(`${VITE_API_URL}/questions/pending`, { headers }),
       fetch(`${VITE_API_URL}/questions/approved`, { headers })
     ]);
-    if (pendingRes.ok) setPending(await pendingRes.json());
-    if (approvedRes.ok) setApproved(await approvedRes.json());
+    if (pendingRes.ok) {
+      const data = await pendingRes.json();
+      setPending(Array.isArray(data) ? data : (data.questions || data.data || []));
+    }
+    if (approvedRes.ok) {
+      const data = await approvedRes.json();
+      setApproved(Array.isArray(data) ? data : (data.questions || data.data || []));
+    }
   };
 
   const handleLogin = (e) => {

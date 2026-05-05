@@ -17,6 +17,21 @@ const appsyncConfig = {
   cognitoClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
 };
 
+if (VITE_RUNTIME === 'lambda' && appsyncConfig.graphqlUrl) {
+  Amplify.configure({
+    API: {
+      GraphQL: {
+        endpoint: appsyncConfig.graphqlUrl,
+        region: 'ap-southeast-1',
+        defaultAuthMode: 'apiKey',
+        apiKey: appsyncConfig.apiKey,
+      },
+    },
+  });
+}
+
+const client = (VITE_RUNTIME === 'lambda' && appsyncConfig.graphqlUrl) ? generateClient() : null;
+
 const ON_QUESTION_UPDATE = `subscription OnQuestionUpdate {
   onQuestionUpdate {
     id txt stat gid ts
@@ -34,7 +49,8 @@ export function useRealtimeQuestions(initialQuestions) {
           const res = await fetch(`${VITE_API_URL}/questions/approved`);
           if (res.ok) {
             const data = await res.json();
-            setQuestions(data);
+            const list = Array.isArray(data) ? data : (data.questions || data.data || []);
+            setQuestions(list);
           }
         } catch (err) {
           console.error('Polling error:', err);
@@ -43,19 +59,7 @@ export function useRealtimeQuestions(initialQuestions) {
 
       const interval = setInterval(fetchApproved, 5000); // Poll every 5 seconds
       return () => clearInterval(interval);
-    } else if (VITE_RUNTIME === 'lambda' && appsyncConfig.graphqlUrl) {
-      Amplify.configure({
-        API: {
-          GraphQL: {
-            endpoint: appsyncConfig.graphqlUrl,
-            region: 'ap-southeast-1',
-            defaultAuthMode: 'apiKey',
-            apiKey: appsyncConfig.apiKey,
-          },
-        },
-      });
-
-      const client = generateClient();
+    } else if (client) {
       const sub = client.graphql({
         query: ON_QUESTION_UPDATE,
       }).subscribe({
@@ -63,7 +67,10 @@ export function useRealtimeQuestions(initialQuestions) {
           const q = data.onQuestionUpdate;
           setQuestions((prev) => {
             if (q.stat === 'apprv') {
-              return [...prev, { ...q, status: 'approved' }];
+              // Add if not exists
+              if (!prev.find(x => x.id === q.id)) {
+                return [...prev, { ...q, status: 'approved' }];
+              }
             }
             if (q.stat === 'flag') {
               return prev.filter((x) => x.id !== q.id);
