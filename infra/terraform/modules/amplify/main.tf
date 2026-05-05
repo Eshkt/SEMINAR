@@ -58,12 +58,10 @@ resource "aws_amplify_app" "main" {
       phases:
         preBuild:
           commands:
-            - cd frontend
-            - npm ci
+            - npm ci --legacy-peer-deps --prefix frontend
         build:
           commands:
-            - cd frontend
-            - npm run build
+            - npm run build --prefix frontend
       artifacts:
         baseDirectory: frontend/dist
         files:
@@ -81,9 +79,9 @@ resource "aws_amplify_app" "main" {
     VITE_ADMIN_PASS           = var.vite_admin_pass
   }
 
-  # For Single Page App (SPA) routing
+  # For Single Page App (SPA) routing - exclude file extensions
   custom_rule {
-    source = "/<*>"
+    source = "/<^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>"
     status = "200"
     target = "/index.html"
   }

@@ -34,3 +34,8 @@ output "cognito_client_id" {
   description = "Cognito User Pool Client ID"
   value       = module.cognito.client_id
 }
+
+output "api_cloudfront_domain" {
+  description = "CloudFront domain for API"
+  value       = module.api_gateway_cloudfront.distribution_domain
+}

@@ -9,13 +9,14 @@ This document provides the necessary links, configuration details, and operation
 These resources were provisioned on AWS in the `ap-southeast-1` region.
 
 ### **Service Endpoints**
-*   **Main API (Lambda URL):** [https://htmru5bvtpowddxiyihz4aqwva0bbxik.lambda-url.ap-southeast-1.on.aws/](https://htmru5bvtpowddxiyihz4aqwva0bbxik.lambda-url.ap-southeast-1.on.aws/)
-*   **Real-time API (AppSync):** [https://an7wt4l3yvfr3fq2ndl3yekw74.appsync-api.ap-southeast-1.amazonaws.com/graphql](https://an7wt4l3yvfr3fq2ndl3yekw74.appsync-api.ap-southeast-1.amazonaws.com/graphql)
-*   **Database (RDS PostgreSQL):** `seminar-qa-prod-db.cj02iicikub7.ap-southeast-1.rds.amazonaws.com:5432`
+*   **Main API (CloudFront):** [https://d11ffcb0dwbou3.cloudfront.net/](https://d11ffcb0dwbou3.cloudfront.net/)
+*   **Main API (Legacy Lambda URL):** [https://oflwh4avfkubuk2xhak45x4p6u0ntqty.lambda-url.ap-southeast-1.on.aws/](https://oflwh4avfkubuk2xhak45x4p6u0ntqty.lambda-url.ap-southeast-1.on.aws/)
+*   **Real-time API (AppSync):** [https://vjf7gmwzija7rnmcbso4hdl52e.appsync-api.ap-southeast-1.amazonaws.com/graphql](https://vjf7gmwzija7rnmcbso4hdl52e.appsync-api.ap-southeast-1.amazonaws.com/graphql)
+*   **Database (RDS PostgreSQL):** `cnag-clouded-prod-db.cj02iicikub7.ap-southeast-1.rds.amazonaws.com:5432`
 
 ### **Authentication (Cognito)**
-*   **User Pool ID:** `ap-southeast-1_bRSe3TUQH`
-*   **Client ID:** `ftol86fbijam4e0p7as8n4ptp`
+*   **User Pool ID:** `ap-southeast-1_XM8pJwCqY`
+*   **Client ID:** `5v8qvpmhbkbdqp0l4frbghvncb`
 *   **Admin Email:** `franky.parcon@globe.com.ph` (Check email for temporary password if a user was created).
 
 ---
@@ -25,10 +26,10 @@ These resources were provisioned on AWS in the `ap-southeast-1` region.
 To run the frontend and connect it to the cloud environment, create a `.env` file in the `frontend/` directory with the following content:
 
 ```env
-VITE_API_URL=https://htmru5bvtpowddxiyihz4aqwva0bbxik.lambda-url.ap-southeast-1.on.aws
-VITE_APPSYNC_URL=https://an7wt4l3yvfr3fq2ndl3yekw74.appsync-api.ap-southeast-1.amazonaws.com/graphql
-VITE_COGNITO_USER_POOL_ID=ap-southeast-1_bRSe3TUQH
-VITE_COGNITO_CLIENT_ID=ftol86fbijam4e0p7as8n4ptp
+VITE_API_URL=https://d11ffcb0dwbou3.cloudfront.net
+VITE_APPSYNC_URL=https://vjf7gmwzija7rnmcbso4hdl52e.appsync-api.ap-southeast-1.amazonaws.com/graphql
+VITE_COGNITO_USER_POOL_ID=ap-southeast-1_XM8pJwCqY
+VITE_COGNITO_CLIENT_ID=5v8qvpmhbkbdqp0l4frbghvncb
 ```
 
 ### **Running Locally**
