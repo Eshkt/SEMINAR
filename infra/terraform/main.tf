@@ -50,6 +50,10 @@ module "cognito" {
   app_name    = var.app_name
   environment = var.environment
   admin_email = var.admin_email
+  callback_urls = [
+    "http://localhost:5173",
+    "https://main.d3elharbo6tuv7.amplifyapp.com"
+  ]
 }
 
 module "bedrock" {

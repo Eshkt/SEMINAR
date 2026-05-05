@@ -29,7 +29,7 @@ resource "aws_appsync_graphql_api" "main" {
   }
 
   schema = <<SCHEMA
-type Question {
+type Question @aws_api_key @aws_cognito_user_pools {
   id: ID!
   txt: String!
   stat: String!
@@ -40,14 +40,17 @@ type Question {
 type Subscription {
   onQuestionUpdate: Question
     @aws_subscribe(mutations: ["publishQuestion"])
+    @aws_api_key @aws_cognito_user_pools
 }
 
 type Mutation {
   publishQuestion(id: ID!, txt: String!, stat: String!, gid: ID, ts: AWSDateTime): Question
+    @aws_api_key @aws_cognito_user_pools
 }
 
 type Query {
   listApproved: [Question]
+    @aws_api_key @aws_cognito_user_pools
 }
 SCHEMA
 }

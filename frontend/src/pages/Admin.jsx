@@ -1,26 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Authenticator } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
+const VITE_RUNTIME = import.meta.env.VITE_RUNTIME || 'local';
 const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || 'localadmin123';
 
-function Admin() {
+function AdminContent() {
   const [pending, setPending] = useState([]);
   const [approved, setApproved] = useState([]);
-  const [password, setPassword] = useState('');
-  const [authenticated, setAuthenticated] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const stored = localStorage.getItem('adminAuth');
-    if (stored === 'true') {
-      setAuthenticated(true);
-      fetchQuestions();
+  const getHeaders = async () => {
+    if (VITE_RUNTIME === 'lambda') {
+      const { tokens } = await fetchAuthSession();
+      return { 
+        'Authorization': `Bearer ${tokens.idToken.toString()}` 
+      };
     }
-  }, []);
+    return { 'x-admin-password': ADMIN_PASS };
+  };
 
   const fetchQuestions = async () => {
-    const headers = { 'x-admin-password': ADMIN_PASS };
+    const headers = await getHeaders();
     const [pendingRes, approvedRes] = await Promise.all([
       fetch(`${VITE_API_URL}/questions/pending`, { headers }),
       fetch(`${VITE_API_URL}/questions/approved`, { headers })
@@ -35,67 +39,36 @@ function Admin() {
     }
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === ADMIN_PASS) {
-      localStorage.setItem('adminAuth', 'true');
-      setAuthenticated(true);
-      fetchQuestions();
-    } else {
-      alert('Invalid password');
-    }
-  };
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
 
   const handleApprove = async (id) => {
+    const headers = await getHeaders();
     await fetch(`${VITE_API_URL}/questions/approve/${id}`, {
       method: 'POST',
-      headers: { 'x-admin-password': ADMIN_PASS }
+      headers
     });
     fetchQuestions();
   };
 
   const handleHide = async (id) => {
+    const headers = await getHeaders();
     await fetch(`${VITE_API_URL}/questions/hide/${id}`, {
       method: 'POST',
-      headers: { 'x-admin-password': ADMIN_PASS }
+      headers
     });
     fetchQuestions();
   };
 
   const handleDelete = async (id) => {
+    const headers = await getHeaders();
     await fetch(`${VITE_API_URL}/questions/${id}`, {
       method: 'DELETE',
-      headers: { 'x-admin-password': ADMIN_PASS }
+      headers
     });
     fetchQuestions();
   };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
-    setAuthenticated(false);
-    navigate('/');
-  };
-
-  if (!authenticated) {
-    return (
-      <div className="container">
-        <div className="card max-w-md mx-auto mt-20">
-          <h1 className="text-xl font-bold mb-4">Admin Login</h1>
-          <form onSubmit={handleLogin}>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
-              className="w-full p-3 border rounded mb-4"
-            />
-            <button type="submit" className="btn w-full">Login</button>
-          </form>
-          <Link to="/" className="text-blue-600 hover:underline mt-4 block">Back to Site</Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container">
@@ -103,7 +76,6 @@ function Admin() {
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <div>
           <Link to="/" className="text-blue-600 hover:underline mr-4">Back to Site</Link>
-          <button onClick={handleLogout} className="btn bg-gray-600">Logout</button>
         </div>
       </div>
 
@@ -146,6 +118,67 @@ function Admin() {
       </div>
     </div>
   );
+}
+
+function Admin() {
+  const [password, setPassword] = useState('');
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (VITE_RUNTIME === 'local') {
+      const stored = localStorage.getItem('adminAuth');
+      if (stored === 'true') setAuthenticated(true);
+    }
+  }, []);
+
+  const handleLocalLogin = (e) => {
+    e.preventDefault();
+    if (password === ADMIN_PASS) {
+      localStorage.setItem('adminAuth', 'true');
+      setAuthenticated(true);
+    } else {
+      alert('Invalid password');
+    }
+  };
+
+  if (VITE_RUNTIME === 'lambda') {
+    return (
+      <Authenticator hideSignUp={true}>
+        {({ signOut, user }) => (
+          <main>
+            <div className="bg-white border-b p-2 flex justify-end">
+              <span className="mr-4 text-sm text-gray-600">Logged in as {user.username}</span>
+              <button onClick={signOut} className="text-sm text-red-600 font-bold">Sign Out</button>
+            </div>
+            <AdminContent />
+          </main>
+        )}
+      </Authenticator>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <div className="container">
+        <div className="card max-w-md mx-auto mt-20">
+          <h1 className="text-xl font-bold mb-4">Admin Login (Local)</h1>
+          <form onSubmit={handleLocalLogin}>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter admin password"
+              className="w-full p-3 border rounded mb-4"
+            />
+            <button type="submit" className="btn w-full">Login</button>
+          </form>
+          <Link to="/" className="text-blue-600 hover:underline mt-4 block">Back to Site</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return <AdminContent />;
 }
 
 export default Admin;

@@ -64,18 +64,21 @@ export function useRealtimeQuestions(initialQuestions) {
         query: ON_QUESTION_UPDATE,
       }).subscribe({
         next: ({ data }) => {
-          const q = data.onQuestionUpdate;
+          const q = data?.onQuestionUpdate;
+          if (!q) return;
+          
           setQuestions((prev) => {
+            const current = Array.isArray(prev) ? prev : [];
             if (q.stat === 'apprv') {
               // Add if not exists
-              if (!prev.find(x => x.id === q.id)) {
-                return [...prev, { ...q, status: 'approved' }];
+              if (!current.find(x => x.id === q.id)) {
+                return [...current, { ...q, status: 'approved' }];
               }
             }
             if (q.stat === 'flag') {
-              return prev.filter((x) => x.id !== q.id);
+              return current.filter((x) => x.id !== q.id);
             }
-            return prev;
+            return current;
           });
         },
         error: (err) => console.error('AppSync error:', err),

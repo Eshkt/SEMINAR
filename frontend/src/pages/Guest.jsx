@@ -14,11 +14,13 @@ function Guest() {
   const fetchQuestions = async () => {
     try {
       const res = await fetch(`${VITE_API_URL}/questions/approved`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const approvedList = Array.isArray(data) ? data : (data.questions || data.data || []);
       setQuestions(approvedList.map(q => ({ ...q, status: 'approved' })));
     } catch (err) {
       console.error('Failed to fetch questions:', err);
+      setQuestions([]); // Fallback to empty array to avoid .map error
     }
   };
 
@@ -27,22 +29,11 @@ function Guest() {
     if (id) {
       try {
         const res = await fetch(`${VITE_API_URL}/questions/approved`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const approvedList = Array.isArray(data) ? data : (data.questions || data.data || []);
         const q = approvedList.find(x => x.id === id);
         if (q) setMyQuestion({ ...q, status: 'approved' });
-        else {
-          // Check pending
-          const pendingRes = await fetch(`${VITE_API_URL}/questions/pending`, {
-            headers: { 'x-admin-password': 'localadmin123' }
-          });
-          if (pendingRes.ok) {
-            const pendingData = await pendingRes.json();
-            const pendingList = Array.isArray(pendingData) ? pendingData : (pendingData.questions || pendingData.data || []);
-            const p = pendingList.find(x => x.id === id);
-            if (p) setMyQuestion({ ...p, status: 'pending' });
-          }
-        }
       } catch (err) {
         console.error('Failed to fetch my question:', err);
       }

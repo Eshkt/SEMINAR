@@ -10,6 +10,11 @@ variable "admin_email" {
   type = string
 }
 
+variable "callback_urls" {
+  type    = list(string)
+  default = ["http://localhost:5173"]
+}
+
 locals {
   name = "${var.app_name}-${var.environment}"
 }
@@ -40,10 +45,7 @@ resource "aws_cognito_user_pool_client" "main" {
   allowed_oauth_scopes                 = ["openid", "email", "profile"]
   allowed_oauth_flows_user_pool_client = true
 
-  callback_urls = [
-    "http://localhost:5173",
-    "https://PENDING_CLOUDFRONT_DOMAIN"
-  ]
+  callback_urls = var.callback_urls
 
   supported_identity_providers = ["COGNITO"]
 }
