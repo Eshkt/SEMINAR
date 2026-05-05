@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
@@ -13,10 +13,15 @@ function AdminContent() {
   const [approved, setApproved] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     console.log('AdminContent active. Runtime:', VITE_RUNTIME, 'API:', VITE_API_URL);
-    fetchQuestions();
+    fetchQuestions().finally(() => {
+      fetchingRef.current = false;
+    });
   }, []);
 
   const getHeaders = async () => {
@@ -51,7 +56,7 @@ function AdminContent() {
 
       if (pendingRes.status === 401 || approvedRes.status === 401) {
         console.error('[DEBUG] 401 Unauthorized detected');
-        setError('Unauthorized: Access denied. Please ensure you are logged in as an admin.');
+        setError('Session expired or unauthorized. Please refresh the page or sign in again.');
         return;
       }
 
