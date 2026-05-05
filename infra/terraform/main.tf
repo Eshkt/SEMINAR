@@ -106,6 +106,7 @@ module "amplify" {
   vite_api_url              = "https://${module.api_gateway_cloudfront.distribution_domain}"
   vite_api_stage            = module.api_gateway.stage_name
   vite_appsync_url          = module.appsync.graphql_url
+  vite_appsync_key          = module.appsync.api_key
   vite_cognito_user_pool_id = module.cognito.user_pool_id
   vite_cognito_client_id    = module.cognito.client_id
   vite_admin_pass           = var.admin_password

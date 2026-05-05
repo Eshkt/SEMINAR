@@ -28,6 +28,11 @@ variable "vite_appsync_url" {
   type = string
 }
 
+variable "vite_appsync_key" {
+  type      = string
+  sensitive = true
+}
+
 variable "vite_cognito_user_pool_id" {
   type = string
 }
@@ -73,7 +78,9 @@ resource "aws_amplify_app" "main" {
 
   environment_variables = {
     VITE_API_URL              = var.vite_api_url
+    VITE_RUNTIME              = "lambda"
     VITE_APPSYNC_URL          = var.vite_appsync_url
+    VITE_APPSYNC_KEY          = var.vite_appsync_key
     VITE_COGNITO_USER_POOL_ID = var.vite_cognito_user_pool_id
     VITE_COGNITO_CLIENT_ID    = var.vite_cognito_client_id
     VITE_ADMIN_PASS           = var.vite_admin_pass
