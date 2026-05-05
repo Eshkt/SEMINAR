@@ -1,0 +1,25 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Mutation {
+  publishQuestion(gid: ID, id: ID!, stat: String!, ts: AWSDateTime, txt: String!): Question @aws_api_key @aws_cognito_user_pools
+}
+
+type Query {
+  listApproved: [Question] @aws_api_key @aws_cognito_user_pools
+}
+
+type Question @aws_api_key @aws_cognito_user_pools {
+  gid: ID
+  id: ID!
+  stat: String!
+  ts: AWSDateTime
+  txt: String!
+}
+
+type Subscription {
+  onQuestionUpdate: Question @aws_api_key @aws_cognito_user_pools @aws_subscribe(mutations : ["publishQuestion"])
+}
