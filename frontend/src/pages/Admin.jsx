@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || 'localadmin123';
 
 function Admin() {

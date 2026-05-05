@@ -28,6 +28,13 @@ locals {
 resource "aws_security_group" "lambda" {
   name        = "${local.name}-lambda-sg"
   description = "Lambda security group"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 module "rds" {
@@ -73,17 +80,33 @@ module "lambda" {
   lambda_zip_path      = "${path.module}/../../backend/lambda.zip"
 }
 
+module "api_gateway" {
+  source       = "./modules/api_gateway"
+  app_name     = var.app_name
+  environment  = var.environment
+  lambda_arn   = module.lambda.function_arn
+}
+
+module "api_gateway_cloudfront" {
+  source                 = "./modules/api_gateway_cloudfront"
+  app_name               = var.app_name
+  environment            = var.environment
+  api_gateway_invoke_url = module.api_gateway.invoke_url
+  api_gateway_id         = module.api_gateway.api_id
+}
+
 module "amplify" {
-  source      = "./modules/amplify"
-  app_name    = var.app_name
-  environment = var.environment
-  repository  = "https://gitlab.com/franky.parcon/qna-web-app"
+  source       = "./modules/amplify"
+  app_name     = var.app_name
+  environment  = var.environment
+  repository   = "https://gitlab.com/franky.parcon/qna-web-app"
   access_token = var.gitlab_access_token
   branch_name  = "main"
 
-  vite_api_url              = module.lambda.function_url
+  vite_api_url              = "https://${module.api_gateway_cloudfront.distribution_domain}"
+  vite_api_stage            = module.api_gateway.stage_name
   vite_appsync_url          = module.appsync.graphql_url
-  vite_cognito_user_pool_id  = module.cognito.user_pool_id
-  vite_cognito_client_id     = module.cognito.client_id
-  vite_admin_pass            = var.admin_password
+  vite_cognito_user_pool_id = module.cognito.user_pool_id
+  vite_cognito_client_id    = module.cognito.client_id
+  vite_admin_pass           = var.admin_password
 }

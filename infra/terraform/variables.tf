@@ -25,7 +25,7 @@ variable "admin_email" {
 variable "app_name" {
   description = "Application name prefix"
   type        = string
-  default     = "cnag-clouded"
+  default     = "seminar-qa"
 }
 
 variable "environment" {

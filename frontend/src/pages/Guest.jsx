@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useRealtimeQuestions } from '../hooks/useRealtimeQuestions';
 
-const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 function Guest() {
   const [text, setText] = useState('');

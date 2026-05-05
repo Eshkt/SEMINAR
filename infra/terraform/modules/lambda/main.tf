@@ -96,18 +96,20 @@ resource "aws_iam_role_policy" "lambda" {
           "rds-db:connect",
           "ec2:CreateNetworkInterface",
           "ec2:DescribeNetworkInterfaces",
-          "ec2:DeleteNetworkInterface"
+          "ec2:DeleteNetworkInterface",
+          "ec2:AssignPrivateIpAddresses",
+          "ec2:UnassignPrivateIpAddresses"
         ]
         Resource = "*"
       },
       {
-        Effect = "Allow"
-        Action = "bedrock:InvokeModel"
+        Effect   = "Allow"
+        Action   = "bedrock:InvokeModel"
         Resource = "arn:aws:bedrock:*:*:foundation-model/${var.bedrock_model_id}"
       },
       {
-        Effect = "Allow"
-        Action = "appsync:GraphQL"
+        Effect   = "Allow"
+        Action   = "appsync:GraphQL"
         Resource = "${var.appsync_arn}/*"
       }
     ]
@@ -115,24 +117,24 @@ resource "aws_iam_role_policy" "lambda" {
 }
 
 resource "aws_lambda_function" "main" {
-  filename         = var.lambda_zip_path
-  function_name    = "${local.name}-api"
-  role             = aws_iam_role.lambda.arn
-  handler          = "index.handler"
-  runtime          = "nodejs18.x"
-  timeout          = 30
-  memory_size      = 256
+  filename      = var.lambda_zip_path
+  function_name = "${local.name}-api"
+  role          = aws_iam_role.lambda.arn
+  handler       = "index.handler"
+  runtime       = "nodejs18.x"
+  timeout       = 30
+  memory_size   = 256
 
   environment {
     variables = {
-      DB_URL                = var.db_url
-      ADMIN_PASS            = var.admin_password
-      APPSYNC_URL           = var.appsync_url
-      APPSYNC_KEY           = var.appsync_key
-      BEDROCK_MODEL_ID      = var.bedrock_model_id
-      COGNITO_USER_POOL_ID  = var.cognito_user_pool_id
-      COGNITO_CLIENT_ID     = var.cognito_client_id
-      RUNTIME               = "lambda"
+      DB_URL               = var.db_url
+      ADMIN_PASS           = var.admin_password
+      APPSYNC_URL          = var.appsync_url
+      APPSYNC_KEY          = var.appsync_key
+      BEDROCK_MODEL_ID     = var.bedrock_model_id
+      COGNITO_USER_POOL_ID = var.cognito_user_pool_id
+      COGNITO_CLIENT_ID    = var.cognito_client_id
+      RUNTIME              = "lambda"
     }
   }
 
@@ -192,8 +194,8 @@ resource "aws_iam_role_policy" "appsync" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
-      Action = "lambda:InvokeFunction"
+      Effect   = "Allow"
+      Action   = "lambda:InvokeFunction"
       Resource = aws_lambda_function.main.arn
     }]
   })

@@ -41,9 +41,14 @@ variable "vite_admin_pass" {
   sensitive = true
 }
 
+variable "vite_api_stage" {
+  type    = string
+  default = "prod"
+}
+
 resource "aws_amplify_app" "main" {
-  name       = var.app_name
-  repository = var.repository
+  name         = var.app_name
+  repository   = var.repository
   access_token = var.access_token
 
   # Build settings for Vite app in 'frontend' subdirectory
@@ -85,7 +90,7 @@ resource "aws_amplify_app" "main" {
 }
 
 resource "aws_amplify_branch" "main" {
-  app_id      = aws_amplify_app.main.id
-  branch_name = var.branch_name
+  app_id            = aws_amplify_app.main.id
+  branch_name       = var.branch_name
   enable_auto_build = true
 }

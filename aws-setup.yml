@@ -13,6 +13,16 @@ Parameters:
     Default: ap-southeast-1
 
 Resources:
+  # CloudFront Origin Access Control
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: cnag-aws-qna-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
   # S3 Bucket
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -29,27 +39,7 @@ Resources:
         - Key: Application
           Value: QNA-Web-App
 
-  # S3 Bucket Policy for CloudFront access
-  S3BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref S3Bucket
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: cloudfront.amazonaws.com
-            Action: s3:GetObject
-            Resource: !Sub arn:aws:s3:::${BucketName}/*
-
-  # CloudFront OAI (Origin Access Identity)
-  CloudFrontOAI:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: OAI for S3 bucket
-
-  # CloudFront Distribution
+  # CloudFront Distribution with OAC
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -58,9 +48,10 @@ Resources:
         DefaultRootObject: index.html
         Origins:
           - Id: S3Origin
-            DomainName: !GetAtt S3Bucket.DomainName
+            DomainName: !GetAtt S3Bucket.RegionalDomainName
+            OriginAccessControlId: !Ref CloudFrontOAC
             S3OriginConfig:
-              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${CloudFrontOAI}
+              OriginAccessIdentity: ""
         DefaultCacheBehavior:
           AllowedMethods:
             - GET
@@ -85,6 +76,23 @@ Resources:
           - ErrorCode: 404
             ResponseCode: 200
             ResponsePagePath: /index.html
+
+  # S3 Bucket Policy for CloudFront OAC access
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub arn:aws:s3:::${BucketName}/*
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
 
 Outputs:
   BucketName:

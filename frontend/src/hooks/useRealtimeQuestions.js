@@ -29,7 +29,9 @@ export function useRealtimeQuestions(initialQuestions) {
 
   useEffect(() => {
     if (VITE_RUNTIME === 'local') {
-      const socket = io(VITE_API_URL);
+      const socket = io(VITE_API_URL, {
+        transports: ['polling']
+      });
 
       socket.on('questionSubmitted', (q) => {
         console.log('New question submitted:', q);
