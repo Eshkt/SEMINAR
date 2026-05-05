@@ -8,26 +8,21 @@ const VITE_API_URL = import.meta.env.VITE_API_URL;
 const VITE_RUNTIME = import.meta.env.VITE_RUNTIME || 'local';
 const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || 'localadmin123';
 
-function AdminContent({ onAuthError }) {
+function AdminContent() {
   const [pending, setPending] = useState([]);
   const [approved, setApproved] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const getHeaders = async () => {
     if (VITE_RUNTIME === 'lambda') {
-      try {
-        const { tokens } = await fetchAuthSession();
-        if (!tokens?.idToken) {
-          throw new Error('No ID token available');
-        }
-        return {
-          'Authorization': `Bearer ${tokens.idToken.toString()}`
-        };
-      } catch (err) {
-        console.error('Auth session failed:', err);
-        if (onAuthError) onAuthError();
-        throw err;
+      const { tokens } = await fetchAuthSession();
+      if (!tokens?.idToken) {
+        throw new Error('No ID token available');
       }
+      return {
+        'Authorization': `Bearer ${tokens.idToken.toString()}`
+      };
     }
     return { 'x-admin-password': ADMIN_PASS };
   };
@@ -41,8 +36,8 @@ function AdminContent({ onAuthError }) {
       ]);
 
       if (pendingRes.status === 401 || approvedRes.status === 401) {
-        if (onAuthError) onAuthError();
-        throw new Error('Unauthorized');
+        setError('Unauthorized');
+        return;
       }
 
       if (pendingRes.ok) {
@@ -53,30 +48,17 @@ function AdminContent({ onAuthError }) {
         const data = await approvedRes.json();
         setApproved(Array.isArray(data) ? data : (data.questions || data.data || []));
       }
+      setError(null);
+    } catch (err) {
+      console.error('Fetch questions failed:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let cancelled = false;
-
-    const loadQuestions = async () => {
-      try {
-        await fetchQuestions();
-      } catch (err) {
-        // Silently fail on 401 - let Authenticator handle auth
-        if (!cancelled) {
-          console.error('Failed to load questions:', err);
-        }
-      }
-    };
-
-    loadQuestions();
-
-    return () => {
-      cancelled = true;
-    };
+    fetchQuestions();
   }, []);
 
   const handleApprove = async (id) => {
@@ -87,7 +69,7 @@ function AdminContent({ onAuthError }) {
         headers
       });
       if (res.status === 401) {
-        if (onAuthError) onAuthError();
+        setError('Unauthorized');
         return;
       }
       fetchQuestions();
@@ -104,7 +86,7 @@ function AdminContent({ onAuthError }) {
         headers
       });
       if (res.status === 401) {
-        if (onAuthError) onAuthError();
+        setError('Unauthorized');
         return;
       }
       fetchQuestions();
@@ -121,7 +103,7 @@ function AdminContent({ onAuthError }) {
         headers
       });
       if (res.status === 401) {
-        if (onAuthError) onAuthError();
+        setError('Unauthorized');
         return;
       }
       fetchQuestions();
@@ -201,10 +183,6 @@ function Admin() {
     }
   };
 
-  const handleAuthError = () => {
-    setAuthenticated(false);
-  };
-
   if (VITE_RUNTIME === 'lambda') {
     return (
       <Authenticator hideSignUp={true}>
@@ -214,7 +192,7 @@ function Admin() {
               <span className="mr-4 text-sm text-gray-600">Logged in as {user?.username}</span>
               <button onClick={signOut} className="text-sm text-red-600 font-bold">Sign Out</button>
             </div>
-            <AdminContent onAuthError={handleAuthError} />
+            <AdminContent />
           </main>
         )}
       </Authenticator>
