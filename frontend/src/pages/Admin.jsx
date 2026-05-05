@@ -14,11 +14,16 @@ function AdminContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    console.log('AdminContent active. Runtime:', VITE_RUNTIME, 'API:', VITE_API_URL);
+    fetchQuestions();
+  }, []);
+
   const getHeaders = async () => {
     if (VITE_RUNTIME === 'lambda') {
       const { tokens } = await fetchAuthSession();
       if (!tokens?.idToken) {
-        throw new Error('No ID token available');
+        throw new Error('No ID token available. Please sign in again.');
       }
       return {
         'Authorization': `Bearer ${tokens.idToken.toString()}`
@@ -28,6 +33,7 @@ function AdminContent() {
   };
 
   const fetchQuestions = async () => {
+    setLoading(true);
     try {
       const headers = await getHeaders();
       const [pendingRes, approvedRes] = await Promise.all([
@@ -36,7 +42,7 @@ function AdminContent() {
       ]);
 
       if (pendingRes.status === 401 || approvedRes.status === 401) {
-        setError('Unauthorized');
+        setError('Unauthorized: Access denied. Please ensure you are logged in as an admin.');
         return;
       }
 
@@ -51,15 +57,11 @@ function AdminContent() {
       setError(null);
     } catch (err) {
       console.error('Fetch questions failed:', err);
-      setError(err.message);
+      setError(`Connection Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchQuestions();
-  }, []);
 
   const handleApprove = async (id) => {
     try {
@@ -112,14 +114,24 @@ function AdminContent() {
     }
   };
 
+  if (loading) return <div className="container mt-10 text-center">Loading dashboard...</div>;
+
   return (
     <div className="container">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        <div>
-          <Link to="/" className="text-blue-600 hover:underline mr-4">Back to Site</Link>
+        <div className="flex items-center">
+          <button onClick={fetchQuestions} className="px-3 py-1 bg-gray-200 rounded mr-4 text-sm hover:bg-gray-300">Refresh</button>
+          <Link to="/" className="text-blue-600 hover:underline">Back to Site</Link>
         </div>
       </div>
+
+      {error && (
+        <div className="p-4 mb-6 bg-red-100 border border-red-400 text-red-700 rounded">
+          <p className="font-bold">Error</p>
+          <p>{error}</p>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="card">

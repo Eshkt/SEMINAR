@@ -4,6 +4,9 @@ import { Amplify } from 'aws-amplify'
 import './index.css'
 import App from './App.jsx'
 
+const VITE_RUNTIME = import.meta.env.VITE_RUNTIME;
+console.log('VITE_RUNTIME:', VITE_RUNTIME);
+
 Amplify.configure({
   Auth: {
     Cognito: {
