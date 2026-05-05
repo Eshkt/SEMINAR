@@ -60,6 +60,37 @@ const pool = new Pool({
   ssl: process.env.RUNTIME === 'lambda' ? { rejectUnauthorized: false } : false
 });
 
+// Initialize database
+const initDb = async () => {
+  try {
+    // Check if table exists
+    const checkTable = await pool.query("SELECT to_regclass('public.questions')");
+    if (!checkTable.rows[0].to_regclass) {
+      console.log('Creating questions table...');
+      await pool.query(`
+        DO $$ 
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_enum') THEN
+            CREATE TYPE status_enum AS ENUM ('pend', 'apprv', 'flag');
+          END IF;
+        END $$;
+
+        CREATE TABLE IF NOT EXISTS questions (
+          id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          txt  TEXT NOT NULL,
+          stat status_enum NOT NULL DEFAULT 'pend',
+          gid  UUID REFERENCES questions(id),
+          ts   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+      console.log('Database initialized.');
+    }
+  } catch (err) {
+    console.error('Database initialization failed:', err);
+  }
+};
+initDb();
+
 // Sanitize input - remove control characters, trim whitespace
 function sanitizeInput(str) {
   if (typeof str !== 'string') return '';
@@ -84,7 +115,9 @@ app.post('/submit', async (req, res, next) => {
     if (text.length > 280) {
       return res.status(400).json({ error: 'TOO_LONG' });
     }
-    if ((await getFilter()).isProfane(text)) {
+
+    const filter = await getFilter();
+    if (filter.isProfane(text)) {
       return res.status(400).json({ error: 'PROFANITY' });
     }
 
