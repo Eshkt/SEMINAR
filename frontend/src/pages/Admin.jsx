@@ -35,13 +35,22 @@ function AdminContent() {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
+      console.log('[DEBUG] Starting fetchQuestions...');
+      // Safety delay for Amplify init
+      await new Promise(r => setTimeout(r, 500));
+
       const headers = await getHeaders();
+      console.log('[DEBUG] Headers obtained:', headers.Authorization ? 'Auth present' : 'Auth missing');
+      
       const [pendingRes, approvedRes] = await Promise.all([
         fetch(`${VITE_API_URL}/questions/pending`, { headers }),
         fetch(`${VITE_API_URL}/questions/approved`, { headers })
       ]);
 
+      console.log('[DEBUG] Pending status:', pendingRes.status, 'Approved status:', approvedRes.status);
+
       if (pendingRes.status === 401 || approvedRes.status === 401) {
+        console.error('[DEBUG] 401 Unauthorized detected');
         setError('Unauthorized: Access denied. Please ensure you are logged in as an admin.');
         return;
       }
@@ -56,7 +65,7 @@ function AdminContent() {
       }
       setError(null);
     } catch (err) {
-      console.error('Fetch questions failed:', err);
+      console.error('[DEBUG] Fetch questions failed:', err);
       setError(`Connection Error: ${err.message}`);
     } finally {
       setLoading(false);
