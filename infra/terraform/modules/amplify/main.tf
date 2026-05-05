@@ -89,7 +89,7 @@ resource "aws_amplify_app" "main" {
 
   # For Single Page App (SPA) routing - exclude file extensions
   custom_rule {
-    source = "/<^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|ttf|map|json)$)([^.]+$)/>"
+    source = "<^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|ttf|map|json)$)([^.]+$)>"
     status = "200"
     target = "/index.html"
   }

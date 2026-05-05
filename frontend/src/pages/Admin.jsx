@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { fetchAuthSession } from 'aws-amplify/auth';
@@ -8,66 +8,126 @@ const VITE_API_URL = import.meta.env.VITE_API_URL;
 const VITE_RUNTIME = import.meta.env.VITE_RUNTIME || 'local';
 const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || 'localadmin123';
 
-function AdminContent() {
+function AdminContent({ onAuthError }) {
   const [pending, setPending] = useState([]);
   const [approved, setApproved] = useState([]);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   const getHeaders = async () => {
     if (VITE_RUNTIME === 'lambda') {
-      const { tokens } = await fetchAuthSession();
-      return { 
-        'Authorization': `Bearer ${tokens.idToken.toString()}` 
-      };
+      try {
+        const { tokens } = await fetchAuthSession();
+        if (!tokens?.idToken) {
+          throw new Error('No ID token available');
+        }
+        return {
+          'Authorization': `Bearer ${tokens.idToken.toString()}`
+        };
+      } catch (err) {
+        console.error('Auth session failed:', err);
+        if (onAuthError) onAuthError();
+        throw err;
+      }
     }
     return { 'x-admin-password': ADMIN_PASS };
   };
 
   const fetchQuestions = async () => {
-    const headers = await getHeaders();
-    const [pendingRes, approvedRes] = await Promise.all([
-      fetch(`${VITE_API_URL}/questions/pending`, { headers }),
-      fetch(`${VITE_API_URL}/questions/approved`, { headers })
-    ]);
-    if (pendingRes.ok) {
-      const data = await pendingRes.json();
-      setPending(Array.isArray(data) ? data : (data.questions || data.data || []));
-    }
-    if (approvedRes.ok) {
-      const data = await approvedRes.json();
-      setApproved(Array.isArray(data) ? data : (data.questions || data.data || []));
+    try {
+      const headers = await getHeaders();
+      const [pendingRes, approvedRes] = await Promise.all([
+        fetch(`${VITE_API_URL}/questions/pending`, { headers }),
+        fetch(`${VITE_API_URL}/questions/approved`, { headers })
+      ]);
+
+      if (pendingRes.status === 401 || approvedRes.status === 401) {
+        if (onAuthError) onAuthError();
+        throw new Error('Unauthorized');
+      }
+
+      if (pendingRes.ok) {
+        const data = await pendingRes.json();
+        setPending(Array.isArray(data) ? data : (data.questions || data.data || []));
+      }
+      if (approvedRes.ok) {
+        const data = await approvedRes.json();
+        setApproved(Array.isArray(data) ? data : (data.questions || data.data || []));
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchQuestions();
+    let cancelled = false;
+
+    const loadQuestions = async () => {
+      try {
+        await fetchQuestions();
+      } catch (err) {
+        // Silently fail on 401 - let Authenticator handle auth
+        if (!cancelled) {
+          console.error('Failed to load questions:', err);
+        }
+      }
+    };
+
+    loadQuestions();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleApprove = async (id) => {
-    const headers = await getHeaders();
-    await fetch(`${VITE_API_URL}/questions/approve/${id}`, {
-      method: 'POST',
-      headers
-    });
-    fetchQuestions();
+    try {
+      const headers = await getHeaders();
+      const res = await fetch(`${VITE_API_URL}/questions/approve/${id}`, {
+        method: 'POST',
+        headers
+      });
+      if (res.status === 401) {
+        if (onAuthError) onAuthError();
+        return;
+      }
+      fetchQuestions();
+    } catch (err) {
+      console.error('Approve failed:', err);
+    }
   };
 
   const handleHide = async (id) => {
-    const headers = await getHeaders();
-    await fetch(`${VITE_API_URL}/questions/hide/${id}`, {
-      method: 'POST',
-      headers
-    });
-    fetchQuestions();
+    try {
+      const headers = await getHeaders();
+      const res = await fetch(`${VITE_API_URL}/questions/hide/${id}`, {
+        method: 'POST',
+        headers
+      });
+      if (res.status === 401) {
+        if (onAuthError) onAuthError();
+        return;
+      }
+      fetchQuestions();
+    } catch (err) {
+      console.error('Hide failed:', err);
+    }
   };
 
   const handleDelete = async (id) => {
-    const headers = await getHeaders();
-    await fetch(`${VITE_API_URL}/questions/${id}`, {
-      method: 'DELETE',
-      headers
-    });
-    fetchQuestions();
+    try {
+      const headers = await getHeaders();
+      const res = await fetch(`${VITE_API_URL}/questions/${id}`, {
+        method: 'DELETE',
+        headers
+      });
+      if (res.status === 401) {
+        if (onAuthError) onAuthError();
+        return;
+      }
+      fetchQuestions();
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
   };
 
   return (
@@ -141,16 +201,20 @@ function Admin() {
     }
   };
 
+  const handleAuthError = () => {
+    setAuthenticated(false);
+  };
+
   if (VITE_RUNTIME === 'lambda') {
     return (
       <Authenticator hideSignUp={true}>
         {({ signOut, user }) => (
           <main>
             <div className="bg-white border-b p-2 flex justify-end">
-              <span className="mr-4 text-sm text-gray-600">Logged in as {user.username}</span>
+              <span className="mr-4 text-sm text-gray-600">Logged in as {user?.username}</span>
               <button onClick={signOut} className="text-sm text-red-600 font-bold">Sign Out</button>
             </div>
-            <AdminContent />
+            <AdminContent onAuthError={handleAuthError} />
           </main>
         )}
       </Authenticator>

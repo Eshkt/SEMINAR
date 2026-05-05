@@ -9,11 +9,19 @@ function Guest() {
   const [myQuestion, setMyQuestion] = useState(null);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState(false);
   const [questions, setQuestions] = useRealtimeQuestions([]);
 
   const fetchQuestions = async () => {
     try {
       const res = await fetch(`${VITE_API_URL}/questions/approved`);
+      if (res.status === 401) {
+        console.error('401 Unauthorized - check auth token');
+        setAuthError(true);
+        setQuestions([]);
+        return;
+      }
+      setAuthError(false);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const approvedList = Array.isArray(data) ? data : (data.questions || data.data || []);
@@ -29,6 +37,12 @@ function Guest() {
     if (id) {
       try {
         const res = await fetch(`${VITE_API_URL}/questions/approved`);
+        if (res.status === 401) {
+          console.error('401 Unauthorized - check auth token');
+          setAuthError(true);
+          return;
+        }
+        setAuthError(false);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const approvedList = Array.isArray(data) ? data : (data.questions || data.data || []);
@@ -87,6 +101,13 @@ function Guest() {
         <h1 className="text-2xl font-bold">Q&A Session</h1>
         <Link to="/admin" className="text-blue-600 hover:underline">Admin</Link>
       </div>
+
+      {authError && (
+        <div className="p-4 mb-6 bg-red-100 border border-red-400 text-red-700 rounded">
+          <p className="font-bold">Connection Issue</p>
+          <p>Unable to fetch questions. Please check your connection or refresh.</p>
+        </div>
+      )}
 
       <div className="card">
         <h2 className="text-lg font-semibold mb-4">Submit Your Question</h2>
