@@ -3,34 +3,12 @@
 // VITE_RUNTIME=lambda → AppSync GraphQL subscription
 
 import { useEffect, useState } from 'react';
-import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
 
 const VITE_RUNTIME = import.meta.env.VITE_RUNTIME || 'local';
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
-// AppSync config (filled by Terraform outputs for prod)
-const appsyncConfig = {
-  graphqlUrl: import.meta.env.VITE_APPSYNC_URL,
-  apiKey: import.meta.env.VITE_APPSYNC_KEY,
-  cognitoPoolId: import.meta.env.VITE_COGNITO_POOL_ID,
-  cognitoClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
-};
-
-if (VITE_RUNTIME === 'lambda' && appsyncConfig.graphqlUrl) {
-  Amplify.configure({
-    API: {
-      GraphQL: {
-        endpoint: appsyncConfig.graphqlUrl,
-        region: 'ap-southeast-1',
-        defaultAuthMode: 'apiKey',
-        apiKey: appsyncConfig.apiKey,
-      },
-    },
-  });
-}
-
-const client = (VITE_RUNTIME === 'lambda' && appsyncConfig.graphqlUrl) ? generateClient() : null;
+const client = (VITE_RUNTIME === 'lambda' && import.meta.env.VITE_APPSYNC_URL) ? generateClient() : null;
 
 const ON_QUESTION_UPDATE = `subscription OnQuestionUpdate {
   onQuestionUpdate {

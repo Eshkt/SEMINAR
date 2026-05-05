@@ -49,8 +49,8 @@ app.use(limiter);
 let filterInstance = null;
 const getFilter = async () => {
   if (!filterInstance) {
-    const BadWords = (await import('bad-words')).default;
-    filterInstance = new BadWords();
+    const { Filter } = await import('bad-words');
+    filterInstance = new Filter();
   }
   return filterInstance;
 };
