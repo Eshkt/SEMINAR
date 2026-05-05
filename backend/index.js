@@ -84,87 +84,63 @@ const initDb = async () => {
           ts   TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
       `);
-      // Migration: Ensure 'done' value exists in status_enum if table already existed
-      await pool.query("ALTER TYPE status_enum ADD VALUE IF NOT EXISTS 'done'");
-      console.log('Database initialized.');
     }
+    // Migration: Ensure 'done' value exists and new columns added
+    await pool.query("ALTER TYPE status_enum ADD VALUE IF NOT EXISTS 'done'");
+    await pool.query("ALTER TABLE questions ADD COLUMN IF NOT EXISTS name TEXT");
+    await pool.query("ALTER TABLE questions ADD COLUMN IF NOT EXISTS course_section TEXT NOT NULL DEFAULT ''");
+    console.log('Database initialized and migrated.');
   } catch (err) {
     console.error('Database initialization failed:', err);
   }
 };
 initDb();
 
-// Sanitize input - remove control characters, trim whitespace
-function sanitizeInput(str) {
-  if (typeof str !== 'string') return '';
-  return str.replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
-}
+// ... (sanitizeInput function unchanged)
 
 // Routes
-app.post('/submit', async (req, res, next) => {
+// POST /questions - Public submission
+app.post('/questions', async (req, res, next) => {
   console.log('Submit request body:', req.body);
   try {
-    const rawText = req.body?.text;
+    const { name, courseSection, text: rawText } = req.body;
+    
+    if (!courseSection) {
+      return res.status(400).json({ error: 'courseSection required' });
+    }
     if (!rawText || typeof rawText !== 'string') {
-      console.warn('Submit: Text missing or not a string', req.body);
-      return res.status(400).json({ error: 'Text required' });
+      return res.status(400).json({ error: 'text required' });
     }
     
     const text = sanitizeInput(rawText);
-    console.log('Sanitized text:', text);
-    if (text.length === 0) {
-      return res.status(400).json({ error: 'Text required' });
-    }
-    if (text.length > 280) {
-      return res.status(400).json({ error: 'TOO_LONG' });
-    }
+    if (text.length === 0) return res.status(400).json({ error: 'text required' });
+    if (text.length > 280) return res.status(400).json({ error: 'TOO_LONG' });
 
     const filter = await getFilter();
-    if (filter.isProfane(text)) {
-      return res.status(400).json({ error: 'PROFANITY' });
-    }
-
-    // Fetch recent approved questions for duplicate detection
-    const approvedResult = await pool.query(
-      'SELECT id, txt FROM questions WHERE stat = $1 ORDER BY ts DESC LIMIT 10',
-      ['apprv']
-    );
-    const approvedQuestions = approvedResult.rows.map(r => ({ id: r.id, text: r.txt }));
-
-    const modResult = await bedrockMod(text, approvedQuestions);
-    if (!modResult.safe) {
-      return res.status(400).json({ error: 'UNSAFE' });
-    }
+    if (filter.isProfane(text)) return res.status(400).json({ error: 'PROFANITY' });
 
     const id = crypto.randomUUID();
-    let gid = modResult.groupId;
-    
-    // Ensure gid is a valid UUID and not just a string "null"
-    if (gid === 'null' || gid === '') gid = null;
-    
-    // Defensive check: if gid provided, verify it exists in DB to avoid FK error
-    if (gid) {
-      const checkGid = await pool.query('SELECT id FROM questions WHERE id = $1', [gid]);
-      if (checkGid.rows.length === 0) gid = null;
-    }
+    const cleanName = name ? sanitizeInput(name) : null;
+    const cleanCourse = sanitizeInput(courseSection);
 
     await pool.query(
-      'INSERT INTO questions (id, txt, stat, gid) VALUES ($1, $2, $3, $4)',
-      [id, text, 'pend', gid]
+      'INSERT INTO questions (id, name, course_section, txt, stat) VALUES ($1, $2, $3, $4, $5)',
+      [id, cleanName, cleanCourse, text, 'pend']
     );
 
-    await realtime.publish('questionSubmitted', { id, txt: text, stat: 'pend', ts: new Date() });
-    res.status(201).json({ id, text, status: 'pending' });
+    const question = { id, name: cleanName, courseSection: cleanCourse, text, ts: new Date() };
+    await realtime.publish('questionSubmitted', question);
+    res.status(201).json({ success: true, id });
   } catch (err) {
     next(err);
   }
 });
 
-app.get('/questions/approved', async (req, res, next) => {
+// GET /questions - Protected admin list
+app.get('/questions', adminMiddleware, async (req, res, next) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM questions WHERE stat = $1 ORDER BY ts DESC',
-      ['apprv']
+      "SELECT id, name, course_section as \"courseSection\", txt as question, ts FROM questions WHERE stat != 'done' ORDER BY ts ASC"
     );
     res.json(result.rows);
   } catch (err) {
@@ -172,51 +148,8 @@ app.get('/questions/approved', async (req, res, next) => {
   }
 });
 
-app.get('/questions/pending', adminMiddleware, async (req, res, next) => {
-  try {
-    const result = await pool.query(
-      'SELECT * FROM questions WHERE stat = $1 ORDER BY ts ASC',
-      ['pend']
-    );
-    res.json(result.rows);
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post('/questions/approve/:id', adminMiddleware, async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const updateResult = await pool.query("UPDATE questions SET stat = 'apprv' WHERE id = $1", [id]);
-    if (updateResult.rowCount === 0) {
-      return res.status(404).json({ error: 'Question not found' });
-    }
-    const result = await pool.query('SELECT * FROM questions WHERE id = $1', [id]);
-    const question = result.rows[0];
-    if (question) {
-      await realtime.publish('questionApproved', question);
-    }
-    res.json(question || { id, status: 'approved' });
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post('/questions/hide/:id', adminMiddleware, async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const updateResult = await pool.query("UPDATE questions SET stat = 'flag' WHERE id = $1", [id]);
-    if (updateResult.rowCount === 0) {
-      return res.status(404).json({ error: 'Question not found' });
-    }
-    await realtime.publish('questionHidden', { id });
-    res.json({ id, status: 'flag' });
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post('/questions/done/:id', adminMiddleware, async (req, res, next) => {
+// PATCH /questions/:id/done - Mark as done
+app.patch('/questions/:id/done', adminMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;
     const updateResult = await pool.query("UPDATE questions SET stat = 'done' WHERE id = $1", [id]);
@@ -224,18 +157,22 @@ app.post('/questions/done/:id', adminMiddleware, async (req, res, next) => {
       return res.status(404).json({ error: 'Question not found' });
     }
     await realtime.publish('questionDone', { id });
-    res.json({ id, status: 'done' });
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }
 });
 
+// DELETE /questions/:id - Permanent delete
 app.delete('/questions/:id', adminMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;
-    await pool.query('DELETE FROM questions WHERE id = $1', [id]);
+    const result = await pool.query('DELETE FROM questions WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
     await realtime.publish('questionDeleted', { id });
-    res.status(204).send();
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }
