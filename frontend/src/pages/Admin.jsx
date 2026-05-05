@@ -120,6 +120,23 @@ function AdminContent() {
     }
   };
 
+  const handleDone = async (id) => {
+    try {
+      const headers = await getHeaders();
+      const res = await fetch(`${VITE_API_URL}/questions/done/${id}`, {
+        method: 'POST',
+        headers
+      });
+      if (res.status === 401) {
+        setError('Unauthorized');
+        return;
+      }
+      fetchQuestions();
+    } catch (err) {
+      console.error('Done failed:', err);
+    }
+  };
+
   const handleDelete = async (id) => {
     try {
       const headers = await getHeaders();
@@ -186,7 +203,13 @@ function AdminContent() {
               {approved.map((q) => (
                 <div key={q.id} className="p-4 bg-green-50 rounded border-l-4 border-green-500">
                   <p>{q.txt}</p>
-                  <small className="text-gray-500">{new Date(q.ts).toLocaleString()}</small>
+                  <div className="mt-2 flex justify-between items-center">
+                    <small className="text-gray-500">{new Date(q.ts).toLocaleString()}</small>
+                    <div className="space-x-2">
+                      <button onClick={() => handleDone(q.id)} className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">Done</button>
+                      <button onClick={() => handleDelete(q.id)} className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">Delete</button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

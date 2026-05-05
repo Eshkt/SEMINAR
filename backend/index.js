@@ -72,7 +72,7 @@ const initDb = async () => {
         DO $$ 
         BEGIN
           IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_enum') THEN
-            CREATE TYPE status_enum AS ENUM ('pend', 'apprv', 'flag');
+            CREATE TYPE status_enum AS ENUM ('pend', 'apprv', 'flag', 'done');
           END IF;
         END $$;
 
@@ -84,6 +84,8 @@ const initDb = async () => {
           ts   TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
       `);
+      // Migration: Ensure 'done' value exists in status_enum if table already existed
+      await pool.query("ALTER TYPE status_enum ADD VALUE IF NOT EXISTS 'done'");
       console.log('Database initialized.');
     }
   } catch (err) {
@@ -209,6 +211,20 @@ app.post('/questions/hide/:id', adminMiddleware, async (req, res, next) => {
     }
     await realtime.publish('questionHidden', { id });
     res.json({ id, status: 'flag' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/questions/done/:id', adminMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const updateResult = await pool.query("UPDATE questions SET stat = 'done' WHERE id = $1", [id]);
+    if (updateResult.rowCount === 0) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+    await realtime.publish('questionDone', { id });
+    res.json({ id, status: 'done' });
   } catch (err) {
     next(err);
   }
