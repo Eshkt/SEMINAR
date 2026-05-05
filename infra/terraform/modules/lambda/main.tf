@@ -117,9 +117,10 @@ resource "aws_iam_role_policy" "lambda" {
 }
 
 resource "aws_lambda_function" "main" {
-  filename      = var.lambda_zip_path
-  function_name = "${local.name}-api"
-  role          = aws_iam_role.lambda.arn
+  filename         = var.lambda_zip_path
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
+  function_name    = "${local.name}-api"
+  role             = aws_iam_role.lambda.arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 30
