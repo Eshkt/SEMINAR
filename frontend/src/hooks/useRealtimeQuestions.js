@@ -8,7 +8,7 @@ import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
 
 const VITE_RUNTIME = import.meta.env.VITE_RUNTIME || 'local';
-const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 // AppSync config (filled by Terraform outputs for prod)
 const appsyncConfig = {
