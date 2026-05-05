@@ -1,9 +1,8 @@
 // Dual-mode realtime hook
-// VITE_RUNTIME=local → Socket.io
+// VITE_RUNTIME=local → Polling
 // VITE_RUNTIME=lambda → AppSync GraphQL subscription
 
 import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
 
@@ -29,32 +28,21 @@ export function useRealtimeQuestions(initialQuestions) {
 
   useEffect(() => {
     if (VITE_RUNTIME === 'local') {
-      const socket = io(VITE_API_URL, {
-        transports: ['polling']
-      });
-
-      socket.on('questionSubmitted', (q) => {
-        console.log('New question submitted:', q);
-      });
-
-      socket.on('questionApproved', (q) => {
-        setQuestions((prev) => {
-          const updated = prev.map((x) => (x.id === q.id ? { ...q, status: 'approved' } : x));
-          return updated;
-        });
-      });
-
-      socket.on('questionHidden', ({ id }) => {
-        setQuestions((prev) => prev.filter((q) => q.id !== id));
-      });
-
-      socket.on('questionDeleted', ({ id }) => {
-        setQuestions((prev) => prev.filter((q) => q.id !== id));
-      });
-
-      return () => {
-        socket.disconnect();
+      // Use Polling as a replacement for Socket.io
+      const fetchApproved = async () => {
+        try {
+          const res = await fetch(`${VITE_API_URL}/questions/approved`);
+          if (res.ok) {
+            const data = await res.json();
+            setQuestions(data);
+          }
+        } catch (err) {
+          console.error('Polling error:', err);
+        }
       };
+
+      const interval = setInterval(fetchApproved, 5000); // Poll every 5 seconds
+      return () => clearInterval(interval);
     } else if (VITE_RUNTIME === 'lambda' && appsyncConfig.graphqlUrl) {
       Amplify.configure({
         API: {

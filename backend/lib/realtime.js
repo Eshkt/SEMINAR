@@ -1,22 +1,15 @@
 // Realtime abstraction
-// RUNTIME=local → Socket.io emit
-// RUNTIME=lambda → AppSync HTTP mutation
+// Lambda → AppSync HTTP mutation
 const axios = require('axios');
 
-let io = null;
 const APPSYNC_URL = process.env.APPSYNC_URL;
 const APPSYNC_KEY = process.env.APPSYNC_KEY;
 
-function init(socketIo) {
-  io = socketIo;
+function init() {
+  // Socket.io removed
 }
 
 async function publish(event, payload) {
-  if (process.env.RUNTIME === 'local' && io) {
-    io.emit(event, payload);
-    return;
-  }
-
   if (APPSYNC_URL && APPSYNC_KEY) {
     // Map event to publishQuestion mutation for AppSync
     const mutation = `
