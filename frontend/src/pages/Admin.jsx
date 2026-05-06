@@ -141,10 +141,10 @@ function AdminContent() {
   }
 
   return (
-    <div className="container max-w-[800px] mx-auto py-10 px-4 relative z-10">
+    <div className="container max-w-[800px] mx-auto py-10 px-4 relative z-10 bg-[var(--hp-black)]">
       {/* Background Particles */}
       {particles.map(p => (
-        <div key={p.id} className="particle" style={{ left: p.left, width: p.size, height: p.size, animation: `float ${p.duration} linear infinite`, animationDelay: p.delay }} />
+        <div key={p.id} className="particle" style={{ left: p.left, width: p.size, height: p.size, animation: `float ${p.duration} linear infinite`, animationDelay: p.delay, backgroundColor: 'var(--hp-gold-mid)' }} />
       ))}
 
       {isPollingError && (
@@ -156,10 +156,10 @@ function AdminContent() {
         </div>
       )}
 
-      <div className="sticky top-[60px] bg-[var(--hp-black)]/80 backdrop-blur-md z-30 pb-6 mb-10 border-b border-[var(--hp-border)]/30">
+      <div className="sticky top-[60px] bg-[var(--hp-black)]/90 backdrop-blur-md z-30 pb-6 mb-10 border-b border-[var(--hp-border)]">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-black text-[var(--hp-gold)] cinzel tracking-widest">
+            <h1 className="text-3xl font-black text-[var(--hp-gold-bright)] cinzel tracking-widest">
               🏰 Professor's Study
             </h1>
             <p className="text-[var(--hp-ink)] cinzel text-[10px] tracking-[0.3em] uppercase mt-2">
@@ -168,34 +168,34 @@ function AdminContent() {
           </div>
           <div className="text-right flex flex-col items-end">
             <div className="flex items-center text-[var(--hp-ink)] cinzel text-[10px] tracking-widest mb-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-[#00FF88] mr-2 shadow-[0_0_8px_rgba(0,255,136,0.6)] animate-pulse"></span>
               <span className="animate-[flicker_2s_infinite]">🕯️ Watching for scrolls...</span>
             </div>
-            <span className="px-3 py-1 bg-[var(--hp-gold)]/10 text-[var(--hp-gold)] text-[10px] font-bold rounded-full border border-[var(--hp-gold)]/30 cinzel tracking-widest">
+            <span className="px-3 py-1 bg-[var(--hp-gold-mid)] text-[var(--hp-black)] text-[10px] font-bold rounded-full border border-[var(--hp-gold-bright)] cinzel tracking-widest">
               {questions.length} scrolls pending
             </span>
           </div>
         </div>
       </div>
 
-      <div className="text-center mb-12 text-[var(--hp-ink)] cinzel text-xs tracking-[0.5em]">
+      <div className="text-center mb-12 text-[var(--hp-gold-mid)] cinzel text-xs tracking-[0.5em]">
         ═══✦ AWAITING ANSWERS ✦═══
       </div>
 
       {questions.length === 0 ? (
         <div className="py-32 text-center parchment-scroll magic-border p-1 bg-[var(--hp-dark-wood)]/30 rounded-sm">
           <span className="text-6xl block mb-6 animate-[flicker_3s_infinite]">🔮</span>
-          <h2 className="text-xl font-black text-[var(--hp-gold)] cinzel tracking-widest">The crystal ball is clear</h2>
-          <p className="text-[var(--hp-ink)] mt-4 cinzel text-sm tracking-widest uppercase">No inquiries from students right now</p>
+          <h2 className="text-xl font-black text-[var(--hp-gold-bright)] cinzel tracking-widest">The crystal ball is clear</h2>
+          <p className="text-[var(--hp-ink)] mt-4 cinzel text-sm tracking-widest uppercase border-t border-[var(--hp-border)] pt-4">No inquiries from students right now</p>
         </div>
       ) : (
         <div className="space-y-10">
           {questions.map((q) => (
-            <div key={q.id} className="parchment-scroll magic-border p-1 rounded-sm group hover:scale-[1.01] transition-transform duration-300">
-              <div className="magic-border-inner bg-[var(--hp-dark-wood)] overflow-hidden shadow-xl border-l-4 border-l-[var(--hp-gold)]">
-                <div className="p-6 border-b border-[var(--hp-border)]/20 bg-black/20 flex justify-between items-start">
+            <div key={q.id} className="parchment-scroll magic-border p-1 rounded-sm group hover:scale-[1.01] transition-transform duration-300 border-[var(--hp-gold-dark)] hover:border-[var(--hp-gold-bright)]">
+              <div className="magic-border-inner bg-[var(--hp-dark-wood)] overflow-hidden shadow-xl border-l-4 border-l-[var(--hp-gold-bright)]">
+                <div className="p-6 border-b border-[var(--hp-border)] bg-black/40 flex justify-between items-start">
                   <div>
-                    <h3 className="font-black text-[var(--hp-gold)] cinzel tracking-widest text-lg flex items-center">
+                    <h3 className="font-black text-[var(--hp-gold-bright)] cinzel tracking-widest text-lg flex items-center">
                       <span className="mr-3 text-sm opacity-60">🧑‍🎓</span> {q.name || 'Anonymous Student'}
                     </h3>
                     <p className="text-xs text-[var(--hp-ink)] cinzel tracking-widest mt-2 flex items-center opacity-80">
@@ -203,32 +203,31 @@ function AdminContent() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <small className="text-[var(--hp-ink)] cinzel text-[10px] uppercase tracking-widest block opacity-60">
+                    <small className="text-[var(--hp-placeholder)] cinzel text-[10px] uppercase tracking-widest block">
                       {new Date(q.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </small>
-                    <small className="text-[var(--hp-ink)] cinzel text-[8px] tracking-widest opacity-40">
+                    <small className="text-[var(--hp-placeholder)] cinzel text-[8px] tracking-widest">
                       {new Date(q.ts).toLocaleDateString()}
                     </small>
                   </div>
                 </div>
                 
-                <div className="p-8 relative">
-                  {/* Decorative ink splatter effect using css radial-gradient if needed, but keeping it clean */}
-                  <p className="text-lg text-[var(--hp-parchment)] leading-relaxed italic font-serif whitespace-pre-wrap">
+                <div className="p-8 relative bg-[var(--hp-wood-light)]">
+                  <p className="text-lg text-[var(--hp-question-text)] leading-relaxed italic font-serif whitespace-pre-wrap">
                     "{q.question}"
                   </p>
                 </div>
 
-                <div className="p-4 bg-black/40 border-t border-[var(--hp-border)]/20 flex justify-end space-x-4">
+                <div className="p-4 bg-black/60 border-t border-[var(--hp-border)] flex justify-end space-x-4">
                   <button 
                     onClick={() => handleDone(q.id)}
-                    className="px-6 py-2 border-2 border-[var(--hp-gold)] text-[var(--hp-gold)] cinzel font-black text-[10px] tracking-widest uppercase hover:bg-[var(--hp-gold)] hover:text-[var(--hp-black)] transition-all duration-300 rounded-sm"
+                    className="wax-seal px-6 py-2 cinzel font-black text-[10px] tracking-widest uppercase rounded-sm"
                   >
                     ✓ Answered
                   </button>
                   <button 
                     onClick={() => handleDelete(q.id)}
-                    className="px-4 py-2 border-2 border-[var(--hp-red)] text-[var(--hp-red)] cinzel font-black text-[10px] tracking-widest uppercase hover:bg-[var(--hp-red)] hover:text-white transition-all duration-300 rounded-sm opacity-60 hover:opacity-100"
+                    className="px-4 py-2 border-2 border-[var(--hp-red)] text-[#FF4444] cinzel font-black text-[10px] tracking-widest uppercase hover:bg-[var(--hp-red)] hover:text-white transition-all duration-300 rounded-sm"
                   >
                     🗑
                   </button>

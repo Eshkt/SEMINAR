@@ -69,7 +69,7 @@ function Guest() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex justify-center items-center py-10 px-4">
+    <div className="min-h-screen relative overflow-hidden flex justify-center items-center py-10 px-4 bg-[var(--hp-black)]">
       {/* Background Particles */}
       {particles.map(p => (
         <div 
@@ -80,14 +80,15 @@ function Guest() {
             width: p.size, 
             height: p.size, 
             animation: `float ${p.duration} linear infinite`,
-            animationDelay: p.delay
+            animationDelay: p.delay,
+            backgroundColor: 'var(--hp-gold-mid)'
           }} 
         />
       ))}
 
       <div className="w-full max-w-[550px] z-10">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-black text-[var(--hp-gold)] cinzel tracking-widest mb-2">
+          <h1 className="text-4xl font-black text-[var(--hp-gold-bright)] cinzel tracking-widest mb-2">
             🦉 The Owlery
           </h1>
           <p className="text-[var(--hp-ink)] cinzel text-sm tracking-[0.2em]">
@@ -96,13 +97,13 @@ function Guest() {
           <div className="mt-4 text-[var(--hp-border)]">───✦───</div>
         </div>
 
-        <div className="magic-border p-1 rounded-sm">
-          <div className="magic-border-inner bg-[var(--hp-dark-wood)] p-8 rounded-sm shadow-[0_0_40px_rgba(201,168,76,0.15)] relative overflow-hidden">
+        <div className="magic-border p-1 rounded-sm border-[var(--hp-gold-mid)]">
+          <div className="magic-border-inner bg-[var(--hp-dark-wood)] p-8 rounded-sm shadow-[0_0_40px_rgba(255,215,0,0.15)] relative overflow-hidden">
             {/* Corner highlights */}
-            <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-[var(--hp-gold)]/5 to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-[var(--hp-gold-bright)]/5 to-transparent pointer-events-none" />
             
             {success && (
-              <div className="p-4 mb-8 bg-[var(--hp-green)]/20 border border-[var(--hp-green)] text-[var(--hp-parchment)] rounded text-center cinzel text-sm animate-pulse">
+              <div className="p-4 mb-8 bg-[var(--hp-green)]/10 border border-[var(--hp-green)] text-[var(--hp-parchment)] rounded text-center cinzel text-sm animate-pulse">
                 🦉 Your owl has been sent! The Professor will answer shortly.
               </div>
             )}
@@ -115,7 +116,7 @@ function Guest() {
 
             <form onSubmit={handleSubmit} className="space-y-8 relative">
               <div className="flex flex-col group">
-                <label className="text-[var(--hp-gold)] cinzel text-[10px] font-bold tracking-[0.2em] mb-2 flex justify-between">
+                <label className="text-[var(--hp-gold-bright)] cinzel text-[10px] font-bold tracking-[0.2em] mb-2 flex justify-between">
                   <span>✦ YOUR NAME</span>
                   <span className="text-[var(--hp-ink)] font-normal lowercase">(optional)</span>
                 </label>
@@ -124,13 +125,13 @@ function Guest() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter name, or remain anonymous..."
-                  className="ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[var(--hp-ink)]/40"
+                  className="ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[var(--hp-placeholder)]"
                   disabled={loading}
                 />
               </div>
 
               <div className="flex flex-col">
-                <label className="text-[var(--hp-gold)] cinzel text-[10px] font-bold tracking-[0.2em] mb-2">
+                <label className="text-[var(--hp-gold-bright)] cinzel text-[10px] font-bold tracking-[0.2em] mb-2">
                   ✦ HOUSE & YEAR
                 </label>
                 <input
@@ -138,7 +139,7 @@ function Guest() {
                   value={courseSection}
                   onChange={(e) => setCourseSection(e.target.value)}
                   placeholder="e.g. Gryffindor, 3rd Year"
-                  className={`ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[var(--hp-ink)]/40 ${formErrors.courseSection ? 'border-[var(--hp-red)]' : ''}`}
+                  className={`ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[var(--hp-placeholder)] ${formErrors.courseSection ? 'border-[var(--hp-red)]' : ''}`}
                   disabled={loading}
                 />
                 {formErrors.courseSection && <span className="text-[var(--hp-red)] text-[10px] cinzel mt-2 tracking-wider">{formErrors.courseSection}</span>}
@@ -146,7 +147,7 @@ function Guest() {
 
               <div className="flex flex-col">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-[var(--hp-gold)] cinzel text-[10px] font-bold tracking-[0.2em]">
+                  <label className="text-[var(--hp-gold-bright)] cinzel text-[10px] font-bold tracking-[0.2em]">
                     ✦ YOUR QUESTION TO THE PROFESSOR
                   </label>
                   <span className="text-[var(--hp-ink)] text-[10px] cinzel">{question.length} / 500 ✦</span>
@@ -155,7 +156,7 @@ function Guest() {
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   placeholder="Inscribe your inquiry here..."
-                  className={`ink-field p-4 rounded-sm w-full min-h-[160px] cinzel text-sm placeholder:text-[var(--hp-ink)]/40 resize-none ${formErrors.question ? 'border-[var(--hp-red)]' : ''}`}
+                  className={`ink-field p-4 rounded-sm w-full min-h-[160px] cinzel text-sm placeholder:text-[var(--hp-placeholder)] resize-none ${formErrors.question ? 'border-[var(--hp-red)]' : ''}`}
                   disabled={loading}
                   maxLength={500}
                 />
