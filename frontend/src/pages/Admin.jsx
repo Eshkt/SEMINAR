@@ -17,20 +17,26 @@ function AdminContent() {
   const intervalRef = useRef(null);
   const consecutiveErrorsRef = useRef(0);
   const POLL_INTERVAL = 5000;
+  const [particles, setParticles] = useState([]);
+
+  useEffect(() => {
+    // Generate magical particles
+    const newParticles = Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100 + '%',
+      duration: Math.random() * 15 + 10 + 's',
+      delay: Math.random() * 10 + 's',
+      size: Math.random() * 2 + 1 + 'px'
+    }));
+    setParticles(newParticles);
+  }, []);
 
   const getHeaders = async () => {
     if (VITE_RUNTIME === 'lambda') {
       const session = await fetchAuthSession();
-      console.log('[TOKEN] session:', session);
-      
       const token = session?.tokens?.idToken?.toString();
-      if (!token) {
-        throw new Error('No ID token available. Please sign in again.');
-      }
-      
-      return {
-        'Authorization': `Bearer ${token}`
-      };
+      if (!token) throw new Error('No ID token available. Please sign in again.');
+      return { 'Authorization': `Bearer ${token}` };
     }
     return { 'x-admin-password': ADMIN_PASS };
   };
@@ -42,15 +48,11 @@ function AdminContent() {
     }
     
     try {
-      console.log(`[DEBUG] Starting fetchQuestions (polling: ${isPolling})...`);
       const headers = await getHeaders();
       const res = await fetch(`${VITE_API_URL}/questions`, { headers });
 
-      console.log('[DEBUG] Fetch status:', res.status);
-
       if (res.status === 401) {
-        console.error('[DEBUG] 401 Unauthorized detected');
-        setError('Session expired or unauthorized. Please refresh the page or sign in again.');
+        setError('Session expired. Please refresh the page or sign in again.');
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
@@ -62,7 +64,6 @@ function AdminContent() {
         const data = await res.json();
         const sorted = (Array.isArray(data) ? data : []).sort((a, b) => new Date(b.ts) - new Date(a.ts));
         
-        // Smart Update: Only change state if data actually changed
         setQuestions(prev => {
           const prevIds = prev.map(q => q.id).join(',');
           const newIds = sorted.map(q => q.id).join(',');
@@ -76,14 +77,11 @@ function AdminContent() {
         throw new Error(`Failed to load: ${res.statusText}`);
       }
     } catch (err) {
-      console.error('[DEBUG] Fetch questions failed:', err);
       if (!isPolling) {
         setError(`Connection Error: ${err.message}`);
       } else {
         consecutiveErrorsRef.current += 1;
-        if (consecutiveErrorsRef.current >= 3) {
-          setIsPollingError(true);
-        }
+        if (consecutiveErrorsRef.current >= 3) setIsPollingError(true);
       }
     } finally {
       if (!isPolling) setLoading(false);
@@ -93,160 +91,148 @@ function AdminContent() {
   useEffect(() => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
-    
-    fetchQuestions().finally(() => {
-      fetchingRef.current = false;
-    });
+    fetchQuestions().finally(() => { fetchingRef.current = false; });
 
-    intervalRef.current = setInterval(() => {
-      fetchQuestions(true);
-    }, POLL_INTERVAL);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
+    intervalRef.current = setInterval(() => { fetchQuestions(true); }, POLL_INTERVAL);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, []);
 
   const handleDone = async (id) => {
     try {
       const headers = await getHeaders();
-      const res = await fetch(`${VITE_API_URL}/questions/${id}/done`, {
-        method: 'PATCH',
-        headers
-      });
-      if (res.status === 401) {
-        setError('Session expired. Please sign in again.');
-        return;
-      }
-      if (res.ok) {
-        setQuestions(prev => prev.filter(q => q.id !== id));
-      }
-    } catch (err) {
-      console.error('Done failed:', err);
-      alert('Action failed: ' + err.message);
-    }
+      const res = await fetch(`${VITE_API_URL}/questions/${id}/done`, { method: 'PATCH', headers });
+      if (res.status === 401) { setError('Session expired. Please sign in again.'); return; }
+      if (res.ok) setQuestions(prev => prev.filter(q => q.id !== id));
+    } catch (err) { alert('Action failed: ' + err.message); }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this question permanently?")) return;
+    if (!confirm("Are you sure, Professor? This scroll will be lost to the void.")) return;
     try {
       const headers = await getHeaders();
-      const res = await fetch(`${VITE_API_URL}/questions/${id}`, {
-        method: 'DELETE',
-        headers
-      });
-      if (res.status === 401) {
-        setError('Session expired. Please sign in again.');
-        return;
-      }
-      if (res.ok) {
-        setQuestions(prev => prev.filter(q => q.id !== id));
-      }
-    } catch (err) {
-      console.error('Delete failed:', err);
-      alert('Delete failed: ' + err.message);
-    }
+      const res = await fetch(`${VITE_API_URL}/questions/${id}`, { method: 'DELETE', headers });
+      if (res.status === 401) { setError('Session expired. Please sign in again.'); return; }
+      if (res.ok) setQuestions(prev => prev.filter(q => q.id !== id));
+    } catch (err) { alert('Delete failed: ' + err.message); }
   };
 
   if (loading) {
     return (
-      <div className="container mt-20 text-center">
-        <div className="animate-pulse text-xl text-gray-500 font-medium">Loading questions...</div>
+      <div className="container mt-40 text-center z-10 relative">
+        <div className="animate-pulse cinzel text-xl text-[var(--hp-gold)] font-black tracking-widest">
+          🪄 Unrolling scrolls...
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mt-20 max-w-md mx-auto">
-        <div className="bg-red-50 border border-red-200 p-6 rounded-lg text-center shadow-sm">
-          <h2 className="text-red-800 font-bold mb-2">Error</h2>
-          <p className="text-red-600 mb-4">{error}</p>
-          <button onClick={fetchQuestions} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">Retry</button>
+      <div className="container mt-20 max-w-md mx-auto z-10 relative px-4">
+        <div className="magic-border p-1 bg-[var(--hp-red)]/10">
+          <div className="magic-border-inner bg-[var(--hp-dark-wood)] p-8 rounded-sm text-center">
+            <h2 className="text-[var(--hp-red)] cinzel font-black mb-4 tracking-widest uppercase">Dark Magic Detected</h2>
+            <p className="text-[var(--hp-parchment)] mb-6 cinzel text-sm">{error}</p>
+            <button onClick={() => fetchQuestions()} className="wax-seal px-8 py-3 cinzel font-bold text-xs uppercase tracking-widest">Try Again</button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-[700px] mx-auto py-10 px-4">
+    <div className="container max-w-[800px] mx-auto py-10 px-4 relative z-10">
+      {/* Background Particles */}
+      {particles.map(p => (
+        <div key={p.id} className="particle" style={{ left: p.left, width: p.size, height: p.size, animation: `float ${p.duration} linear infinite`, animationDelay: p.delay }} />
+      ))}
+
       {isPollingError && (
-        <div className="mb-4 bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-center justify-between text-amber-800 text-sm animate-pulse">
+        <div className="mb-8 bg-[var(--hp-red)]/20 border border-[var(--hp-red)] p-3 rounded flex items-center justify-between text-[var(--hp-parchment)] text-xs cinzel tracking-widest animate-pulse">
           <span className="flex items-center">
-            <span className="mr-2">⚠️</span> Connection lost. Retrying...
+            <span className="mr-2">💀</span> The connection is fading...
           </span>
-          <button onClick={() => fetchQuestions()} className="underline font-bold">Try Now</button>
+          <button onClick={() => fetchQuestions()} className="underline font-bold">Restore link</button>
         </div>
       )}
 
-      <div className="flex justify-between items-center mb-8 border-b pb-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            Questions Dashboard
-            <span className="ml-3 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] uppercase tracking-wider font-bold rounded-full flex items-center border border-green-200">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
-              Live
+      <div className="sticky top-[60px] bg-[var(--hp-black)]/80 backdrop-blur-md z-30 pb-6 mb-10 border-b border-[var(--hp-border)]/30">
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-3xl font-black text-[var(--hp-gold)] cinzel tracking-widest">
+              🏰 Professor's Study
+            </h1>
+            <p className="text-[var(--hp-ink)] cinzel text-[10px] tracking-[0.3em] uppercase mt-2">
+              Reviewing inquiries from students
+            </p>
+          </div>
+          <div className="text-right flex flex-col items-end">
+            <div className="flex items-center text-[var(--hp-ink)] cinzel text-[10px] tracking-widest mb-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></span>
+              <span className="animate-[flicker_2s_infinite]">🕯️ Watching for scrolls...</span>
+            </div>
+            <span className="px-3 py-1 bg-[var(--hp-gold)]/10 text-[var(--hp-gold)] text-[10px] font-bold rounded-full border border-[var(--hp-gold)]/30 cinzel tracking-widest">
+              {questions.length} scrolls pending
             </span>
-          </h1>
-          <div className="flex items-center mt-1">
-            <p className="text-sm text-gray-500">{questions.length} questions waiting</p>
-            <span className="mx-2 text-gray-300">•</span>
-            <p className="text-[10px] text-gray-400 uppercase tracking-tight">Updates every 5s</p>
           </div>
         </div>
-        <button onClick={() => fetchQuestions()} className="px-3 py-1 bg-gray-100 rounded text-sm hover:bg-gray-200 transition-colors">Refresh Now</button>
+      </div>
+
+      <div className="text-center mb-12 text-[var(--hp-ink)] cinzel text-xs tracking-[0.5em]">
+        ═══✦ AWAITING ANSWERS ✦═══
       </div>
 
       {questions.length === 0 ? (
-        <div className="py-20 text-center">
-          <span className="text-5xl block mb-4">🎉</span>
-          <h2 className="text-xl font-medium text-gray-600">No questions yet!</h2>
-          <p className="text-gray-400 mt-2">All caught up.</p>
+        <div className="py-32 text-center parchment-scroll magic-border p-1 bg-[var(--hp-dark-wood)]/30 rounded-sm">
+          <span className="text-6xl block mb-6 animate-[flicker_3s_infinite]">🔮</span>
+          <h2 className="text-xl font-black text-[var(--hp-gold)] cinzel tracking-widest">The crystal ball is clear</h2>
+          <p className="text-[var(--hp-ink)] mt-4 cinzel text-sm tracking-widest uppercase">No inquiries from students right now</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-10">
           {questions.map((q) => (
-            <div key={q.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="p-5 border-b bg-gray-50/50 flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-gray-900 flex items-center">
-                    <span className="mr-2">👤</span> {q.name || 'Anonymous'}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1 flex items-center">
-                    <span className="mr-2">📚</span> {q.courseSection}
+            <div key={q.id} className="parchment-scroll magic-border p-1 rounded-sm group hover:scale-[1.01] transition-transform duration-300">
+              <div className="magic-border-inner bg-[var(--hp-dark-wood)] overflow-hidden shadow-xl border-l-4 border-l-[var(--hp-gold)]">
+                <div className="p-6 border-b border-[var(--hp-border)]/20 bg-black/20 flex justify-between items-start">
+                  <div>
+                    <h3 className="font-black text-[var(--hp-gold)] cinzel tracking-widest text-lg flex items-center">
+                      <span className="mr-3 text-sm opacity-60">🧑‍🎓</span> {q.name || 'Anonymous Student'}
+                    </h3>
+                    <p className="text-xs text-[var(--hp-ink)] cinzel tracking-widest mt-2 flex items-center opacity-80">
+                      <span className="mr-3 opacity-60 italic">📚</span> {q.courseSection}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <small className="text-[var(--hp-ink)] cinzel text-[10px] uppercase tracking-widest block opacity-60">
+                      {new Date(q.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </small>
+                    <small className="text-[var(--hp-ink)] cinzel text-[8px] tracking-widest opacity-40">
+                      {new Date(q.ts).toLocaleDateString()}
+                    </small>
+                  </div>
+                </div>
+                
+                <div className="p-8 relative">
+                  {/* Decorative ink splatter effect using css radial-gradient if needed, but keeping it clean */}
+                  <p className="text-lg text-[var(--hp-parchment)] leading-relaxed italic font-serif whitespace-pre-wrap">
+                    "{q.question}"
                   </p>
                 </div>
-                <div className="text-right">
-                  <small className="text-gray-400 text-xs uppercase tracking-wider block">
-                    {new Date(q.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </small>
-                  <small className="text-gray-400 text-[10px]">
-                    {new Date(q.ts).toLocaleDateString()}
-                  </small>
-                </div>
-              </div>
-              
-              <div className="p-6">
-                <p className="text-lg text-gray-800 leading-relaxed font-medium whitespace-pre-wrap">
-                  {q.question}
-                </p>
-              </div>
 
-              <div className="p-4 bg-gray-50 border-t flex justify-end space-x-3">
-                <button 
-                  onClick={() => handleDone(q.id)}
-                  className="flex-1 max-w-[120px] py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors"
-                >
-                  ✓ Done
-                </button>
-                <button 
-                  onClick={() => handleDelete(q.id)}
-                  className="flex-1 max-w-[120px] py-2 bg-red-50 text-red-600 rounded-lg font-bold text-sm hover:bg-red-100 transition-colors border border-red-200"
-                >
-                  🗑 Delete
-                </button>
+                <div className="p-4 bg-black/40 border-t border-[var(--hp-border)]/20 flex justify-end space-x-4">
+                  <button 
+                    onClick={() => handleDone(q.id)}
+                    className="px-6 py-2 border-2 border-[var(--hp-gold)] text-[var(--hp-gold)] cinzel font-black text-[10px] tracking-widest uppercase hover:bg-[var(--hp-gold)] hover:text-[var(--hp-black)] transition-all duration-300 rounded-sm"
+                  >
+                    ✓ Answered
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(q.id)}
+                    className="px-4 py-2 border-2 border-[var(--hp-red)] text-[var(--hp-red)] cinzel font-black text-[10px] tracking-widest uppercase hover:bg-[var(--hp-red)] hover:text-white transition-all duration-300 rounded-sm opacity-60 hover:opacity-100"
+                  >
+                    🗑
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -273,7 +259,7 @@ function Admin() {
       localStorage.setItem('adminAuth', 'true');
       setAuthenticated(true);
     } else {
-      alert('Invalid password');
+      alert('Invalid incantation (password)');
     }
   };
 
@@ -286,12 +272,12 @@ function Admin() {
     return (
       <Authenticator hideSignUp={true}>
         {({ signOut, user }) => (
-          <main className="min-h-screen bg-gray-50">
-            <div className="bg-white border-b px-4 py-2 flex justify-between items-center shadow-sm sticky top-0 z-10">
-              <Link to="/" className="text-blue-600 font-bold hover:underline">← Home</Link>
+          <main className="min-h-screen relative overflow-hidden bg-[var(--hp-black)]">
+            <div className="bg-[var(--hp-dark-wood)] border-b border-[var(--hp-border)] px-4 py-3 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
+              <Link to="/" className="text-[var(--hp-gold)] cinzel font-black tracking-widest text-xs hover:underline">← Home</Link>
               <div className="flex items-center">
-                <span className="mr-4 text-xs text-gray-500 italic hidden sm:block">Logged in as {user?.username}</span>
-                <button onClick={signOut} className="px-3 py-1 bg-red-50 text-red-600 font-bold text-xs rounded border border-red-100 hover:bg-red-100">Sign Out</button>
+                <span className="mr-6 text-[10px] text-[var(--hp-ink)] cinzel tracking-widest italic hidden sm:block">Logged in as {user?.username}</span>
+                <button onClick={signOut} className="wax-seal px-4 py-1.5 cinzel font-black text-[9px] tracking-[0.2em] rounded-sm uppercase">Leave Study</button>
               </div>
             </div>
             <AdminContent />
@@ -303,30 +289,34 @@ function Admin() {
 
   if (!authenticated) {
     return (
-      <div className="container flex items-center justify-center min-h-screen">
-        <div className="card max-w-md w-full mx-4 shadow-xl border p-8">
-          <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
-          <form onSubmit={handleLocalLogin}>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
-              className="w-full p-4 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-            <button type="submit" className="btn w-full py-4 text-lg">Login</button>
-          </form>
-          <Link to="/" className="text-blue-600 hover:underline mt-6 block text-center font-medium">Back to Site</Link>
+      <div className="container flex items-center justify-center min-h-screen px-4">
+        <div className="w-full max-w-md z-10">
+          <div className="magic-border p-1 rounded-sm shadow-[0_0_60px_rgba(201,168,76,0.1)]">
+            <div className="magic-border-inner bg-[var(--hp-dark-wood)] p-10 rounded-sm text-center">
+              <h1 className="text-3xl font-black mb-8 text-[var(--hp-gold)] cinzel tracking-[0.2em] uppercase">Admin Login</h1>
+              <form onSubmit={handleLocalLogin} className="space-y-8">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter secret incantation..."
+                  className="ink-field w-full p-4 rounded-sm cinzel text-sm placeholder:text-[var(--hp-ink)]/40 tracking-widest"
+                />
+                <button type="submit" className="wax-seal w-full py-4 cinzel font-black text-xs tracking-[0.3em] uppercase rounded-sm">Enter Study</button>
+              </form>
+              <Link to="/" className="text-[var(--hp-gold)] cinzel text-[10px] tracking-widest hover:underline mt-8 block font-medium opacity-60">Back toSite</Link>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b px-4 py-2 flex justify-between items-center shadow-sm sticky top-0 z-10">
-        <Link to="/" className="text-blue-600 font-bold hover:underline">← Home</Link>
-        <button onClick={handleLogout} className="px-3 py-1 bg-red-50 text-red-600 font-bold text-xs rounded border border-red-100 hover:bg-red-100">Sign Out</button>
+    <main className="min-h-screen relative overflow-hidden bg-[var(--hp-black)]">
+      <div className="bg-[var(--hp-dark-wood)] border-b border-[var(--hp-border)] px-4 py-3 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
+        <Link to="/" className="text-[var(--hp-gold)] cinzel font-black tracking-widest text-xs hover:underline">← Home</Link>
+        <button onClick={handleLogout} className="wax-seal px-4 py-1.5 cinzel font-black text-[9px] tracking-[0.2em] rounded-sm uppercase">Leave Study</button>
       </div>
       <AdminContent />
     </main>

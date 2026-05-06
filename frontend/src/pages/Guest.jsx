@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || "https://d11ffcb0dwbou3.cloudfront.net";
 
@@ -10,10 +10,23 @@ function Guest() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [formErrors, setFormErrors] = useState({});
+  const [particles, setParticles] = useState([]);
+
+  useEffect(() => {
+    // Generate magical particles
+    const newParticles = Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100 + '%',
+      duration: Math.random() * 10 + 10 + 's',
+      delay: Math.random() * 10 + 's',
+      size: Math.random() * 3 + 1 + 'px'
+    }));
+    setParticles(newParticles);
+  }, []);
 
   const validate = () => {
     const errs = {};
-    if (!courseSection.trim()) errs.courseSection = "Course & Section is required";
+    if (!courseSection.trim()) errs.courseSection = "House & Year is required";
     if (!question.trim()) errs.question = "Question is required";
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
@@ -44,80 +57,131 @@ function Guest() {
         setCourseSection('');
         setQuestion('');
         setFormErrors({});
-        setTimeout(() => setSuccess(false), 4000);
+        setTimeout(() => setSuccess(false), 5000);
       } else {
         throw new Error('Failed to submit');
       }
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError('💀 Something went wrong. Try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container flex justify-center items-center min-h-screen py-10 px-4">
-      <div className="card w-full max-w-[500px] shadow-lg p-6 bg-white rounded-lg border">
-        <h1 className="text-2xl font-bold mb-6 text-center">Submit Your Question</h1>
-        
-        {success && (
-          <div className="p-4 mb-6 bg-green-100 border border-green-400 text-green-700 rounded text-center font-medium">
-            Your question has been submitted! ✓
-          </div>
-        )}
+    <div className="min-h-screen relative overflow-hidden flex justify-center items-center py-10 px-4">
+      {/* Background Particles */}
+      {particles.map(p => (
+        <div 
+          key={p.id} 
+          className="particle" 
+          style={{ 
+            left: p.left, 
+            width: p.size, 
+            height: p.size, 
+            animation: `float ${p.duration} linear infinite`,
+            animationDelay: p.delay
+          }} 
+        />
+      ))}
 
-        {error && (
-          <div className="p-4 mb-6 bg-red-100 border border-red-400 text-red-700 rounded text-center font-medium">
-            {error}
-          </div>
-        )}
+      <div className="w-full max-w-[550px] z-10">
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-black text-[var(--hp-gold)] cinzel tracking-widest mb-2">
+            🦉 The Owlery
+          </h1>
+          <p className="text-[var(--hp-ink)] cinzel text-sm tracking-[0.2em]">
+            Send your question to the Professor
+          </p>
+          <div className="mt-4 text-[var(--hp-border)]">───✦───</div>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col">
-            <label className="font-semibold mb-2 text-gray-700">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name (optional)"
-              className="p-3 border rounded-md w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-              disabled={loading}
-            />
-          </div>
+        <div className="magic-border p-1 rounded-sm">
+          <div className="magic-border-inner bg-[var(--hp-dark-wood)] p-8 rounded-sm shadow-[0_0_40px_rgba(201,168,76,0.15)] relative overflow-hidden">
+            {/* Corner highlights */}
+            <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-[var(--hp-gold)]/5 to-transparent pointer-events-none" />
+            
+            {success && (
+              <div className="p-4 mb-8 bg-[var(--hp-green)]/20 border border-[var(--hp-green)] text-[var(--hp-parchment)] rounded text-center cinzel text-sm animate-pulse">
+                🦉 Your owl has been sent! The Professor will answer shortly.
+              </div>
+            )}
 
-          <div className="flex flex-col">
-            <label className="font-semibold mb-2 text-gray-700">Course & Section</label>
-            <input
-              type="text"
-              value={courseSection}
-              onChange={(e) => setCourseSection(e.target.value)}
-              placeholder="e.g. BSIT 2ITA"
-              className={`p-3 border rounded-md w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${formErrors.courseSection ? 'border-red-500' : ''}`}
-              disabled={loading}
-            />
-            {formErrors.courseSection && <span className="text-red-500 text-sm mt-1">{formErrors.courseSection}</span>}
-          </div>
+            {error && (
+              <div className="p-4 mb-8 bg-[var(--hp-red)]/20 border border-[var(--hp-red)] text-[var(--hp-parchment)] rounded text-center cinzel text-sm">
+                {error}
+              </div>
+            )}
 
-          <div className="flex flex-col">
-            <label className="font-semibold mb-2 text-gray-700">Question</label>
-            <textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Type your question here..."
-              className={`p-3 border rounded-md w-full min-h-[120px] focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${formErrors.question ? 'border-red-500' : ''}`}
-              disabled={loading}
-            />
-            {formErrors.question && <span className="text-red-500 text-sm mt-1">{formErrors.question}</span>}
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-8 relative">
+              <div className="flex flex-col group">
+                <label className="text-[var(--hp-gold)] cinzel text-[10px] font-bold tracking-[0.2em] mb-2 flex justify-between">
+                  <span>✦ YOUR NAME</span>
+                  <span className="text-[var(--hp-ink)] font-normal lowercase">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter name, or remain anonymous..."
+                  className="ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[var(--hp-ink)]/40"
+                  disabled={loading}
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 text-white font-bold rounded-md transition-all ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-          >
-            {loading ? 'Submitting...' : 'Submit Question'}
-          </button>
-        </form>
+              <div className="flex flex-col">
+                <label className="text-[var(--hp-gold)] cinzel text-[10px] font-bold tracking-[0.2em] mb-2">
+                  ✦ HOUSE & YEAR
+                </label>
+                <input
+                  type="text"
+                  value={courseSection}
+                  onChange={(e) => setCourseSection(e.target.value)}
+                  placeholder="e.g. Gryffindor, 3rd Year"
+                  className={`ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[var(--hp-ink)]/40 ${formErrors.courseSection ? 'border-[var(--hp-red)]' : ''}`}
+                  disabled={loading}
+                />
+                {formErrors.courseSection && <span className="text-[var(--hp-red)] text-[10px] cinzel mt-2 tracking-wider">{formErrors.courseSection}</span>}
+              </div>
+
+              <div className="flex flex-col">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-[var(--hp-gold)] cinzel text-[10px] font-bold tracking-[0.2em]">
+                    ✦ YOUR QUESTION TO THE PROFESSOR
+                  </label>
+                  <span className="text-[var(--hp-ink)] text-[10px] cinzel">{question.length} / 500 ✦</span>
+                </div>
+                <textarea
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="Inscribe your inquiry here..."
+                  className={`ink-field p-4 rounded-sm w-full min-h-[160px] cinzel text-sm placeholder:text-[var(--hp-ink)]/40 resize-none ${formErrors.question ? 'border-[var(--hp-red)]' : ''}`}
+                  disabled={loading}
+                  maxLength={500}
+                />
+                {formErrors.question && <span className="text-[var(--hp-red)] text-[10px] cinzel mt-2 tracking-wider">{formErrors.question}</span>}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`wax-seal w-full py-4 cinzel font-black tracking-[0.3em] uppercase text-xs rounded-sm cursor-pointer shadow-lg ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <span className="animate-spin mr-3">🦉</span> Sending owl...
+                  </span>
+                ) : (
+                  '🪄 Send Owl'
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="mt-12 text-center text-[var(--hp-ink)]/30 text-[10px] tracking-[0.5em] cinzel uppercase">
+          ✦ Hogwarts School of Witchcraft and Wizardry ✦
+        </div>
       </div>
     </div>
   );
