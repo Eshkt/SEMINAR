@@ -12,7 +12,11 @@ function AdminContent() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isPollingError, setIsPollingError] = useState(false);
   const fetchingRef = useRef(false);
+  const intervalRef = useRef(null);
+  const consecutiveErrorsRef = useRef(0);
+  const POLL_INTERVAL = 5000;
 
   const getHeaders = async () => {
     if (VITE_RUNTIME === 'lambda') {
@@ -31,13 +35,14 @@ function AdminContent() {
     return { 'x-admin-password': ADMIN_PASS };
   };
 
-  const fetchQuestions = async () => {
-    setLoading(true);
-    setError(null);
+  const fetchQuestions = async (isPolling = false) => {
+    if (!isPolling) {
+      setLoading(true);
+      setError(null);
+    }
+    
     try {
-      console.log('[DEBUG] Starting fetchQuestions...');
-      await new Promise(r => setTimeout(r, 800));
-
+      console.log(`[DEBUG] Starting fetchQuestions (polling: ${isPolling})...`);
       const headers = await getHeaders();
       const res = await fetch(`${VITE_API_URL}/questions`, { headers });
 
@@ -46,31 +51,62 @@ function AdminContent() {
       if (res.status === 401) {
         console.error('[DEBUG] 401 Unauthorized detected');
         setError('Session expired or unauthorized. Please refresh the page or sign in again.');
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
         return;
       }
 
       if (res.ok) {
         const data = await res.json();
-        // Sort newest first
         const sorted = (Array.isArray(data) ? data : []).sort((a, b) => new Date(b.ts) - new Date(a.ts));
-        setQuestions(sorted);
+        
+        // Smart Update: Only change state if data actually changed
+        setQuestions(prev => {
+          const prevIds = prev.map(q => q.id).join(',');
+          const newIds = sorted.map(q => q.id).join(',');
+          if (prevIds === newIds) return prev;
+          return sorted;
+        });
+
+        consecutiveErrorsRef.current = 0;
+        setIsPollingError(false);
       } else {
         throw new Error(`Failed to load: ${res.statusText}`);
       }
     } catch (err) {
       console.error('[DEBUG] Fetch questions failed:', err);
-      setError(`Connection Error: ${err.message}`);
+      if (!isPolling) {
+        setError(`Connection Error: ${err.message}`);
+      } else {
+        consecutiveErrorsRef.current += 1;
+        if (consecutiveErrorsRef.current >= 3) {
+          setIsPollingError(true);
+        }
+      }
     } finally {
-      setLoading(false);
+      if (!isPolling) setLoading(false);
     }
   };
 
   useEffect(() => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
+    
     fetchQuestions().finally(() => {
       fetchingRef.current = false;
     });
+
+    intervalRef.current = setInterval(() => {
+      fetchQuestions(true);
+    }, POLL_INTERVAL);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, []);
 
   const handleDone = async (id) => {
@@ -136,12 +172,31 @@ function AdminContent() {
 
   return (
     <div className="container max-w-[700px] mx-auto py-10 px-4">
+      {isPollingError && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-center justify-between text-amber-800 text-sm animate-pulse">
+          <span className="flex items-center">
+            <span className="mr-2">⚠️</span> Connection lost. Retrying...
+          </span>
+          <button onClick={() => fetchQuestions()} className="underline font-bold">Try Now</button>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8 border-b pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Questions Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">{questions.length} questions waiting</p>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            Questions Dashboard
+            <span className="ml-3 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] uppercase tracking-wider font-bold rounded-full flex items-center border border-green-200">
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
+              Live
+            </span>
+          </h1>
+          <div className="flex items-center mt-1">
+            <p className="text-sm text-gray-500">{questions.length} questions waiting</p>
+            <span className="mx-2 text-gray-300">•</span>
+            <p className="text-[10px] text-gray-400 uppercase tracking-tight">Updates every 5s</p>
+          </div>
         </div>
-        <button onClick={fetchQuestions} className="px-3 py-1 bg-gray-100 rounded text-sm hover:bg-gray-200 transition-colors">Refresh</button>
+        <button onClick={() => fetchQuestions()} className="px-3 py-1 bg-gray-100 rounded text-sm hover:bg-gray-200 transition-colors">Refresh Now</button>
       </div>
 
       {questions.length === 0 ? (
