@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const API_URL = "https://d11ffcb0dwbou3.cloudfront.net";
+const API_URL = import.meta.env.VITE_API_URL || "https://d11ffcb0dwbou3.cloudfront.net";
 
 function Guest() {
   const [name, setName] = useState('');

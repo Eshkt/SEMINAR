@@ -96,24 +96,28 @@ const initDb = async () => {
 };
 initDb();
 
-// ... (sanitizeInput function unchanged)
+// Sanitize input - remove control characters, trim whitespace
+function sanitizeInput(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
+}
 
 // Routes
 // POST /questions - Public submission
 app.post('/questions', async (req, res, next) => {
   console.log('Submit request body:', req.body);
   try {
-    const { name, courseSection, text: rawText } = req.body;
+    const { name, courseSection, question: rawText } = req.body;
     
     if (!courseSection) {
       return res.status(400).json({ error: 'courseSection required' });
     }
     if (!rawText || typeof rawText !== 'string') {
-      return res.status(400).json({ error: 'text required' });
+      return res.status(400).json({ error: 'question required' });
     }
     
     const text = sanitizeInput(rawText);
-    if (text.length === 0) return res.status(400).json({ error: 'text required' });
+    if (text.length === 0) return res.status(400).json({ error: 'question required' });
     if (text.length > 280) return res.status(400).json({ error: 'TOO_LONG' });
 
     const filter = await getFilter();
