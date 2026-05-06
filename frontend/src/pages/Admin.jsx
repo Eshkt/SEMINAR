@@ -17,17 +17,18 @@ function AdminContent() {
   const intervalRef = useRef(null);
   const consecutiveErrorsRef = useRef(0);
   const POLL_INTERVAL = 5000;
-  const [clouds, setClouds] = useState([]);
+  const [particles, setParticles] = useState([]);
 
   useEffect(() => {
-    const newClouds = Array.from({ length: 10 }).map((_, i) => ({
+    // Generate magical gold particles
+    const newParticles = Array.from({ length: 15 }).map((_, i) => ({
       id: i,
-      top: Math.random() * 80 + '%',
-      duration: Math.random() * 25 + 15 + 's',
+      left: Math.random() * 100 + '%',
+      duration: Math.random() * 15 + 10 + 's',
       delay: Math.random() * 10 + 's',
-      size: Math.random() * 150 + 50 + 'px'
+      size: Math.random() * 2 + 1 + 'px'
     }));
-    setClouds(newClouds);
+    setParticles(newParticles);
   }, []);
 
   const getHeaders = async () => {
@@ -73,11 +74,11 @@ function AdminContent() {
         consecutiveErrorsRef.current = 0;
         setIsPollingError(false);
       } else {
-        throw new Error(`SYSTEM_ERROR: ${res.statusText}`);
+        throw new Error(`UPLINK_ERROR: ${res.statusText}`);
       }
     } catch (err) {
       if (!isPolling) {
-        setError(`UPLINK_FAILURE: ${err.message}`);
+        setError(`CONNECTION_FAILURE: ${err.message}`);
       } else {
         consecutiveErrorsRef.current += 1;
         if (consecutiveErrorsRef.current >= 3) setIsPollingError(true);
@@ -106,7 +107,7 @@ function AdminContent() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("PURGE DATA? THIS ACTION CANNOT BE UNDONE.")) return;
+    if (!confirm("Are you sure, Professor? This scroll will be lost to the void.")) return;
     try {
       const headers = await getHeaders();
       const res = await fetch(`${VITE_API_URL}/questions/${id}`, { method: 'DELETE', headers });
@@ -118,8 +119,8 @@ function AdminContent() {
   if (loading) {
     return (
       <div className="container mt-40 text-center z-10 relative">
-        <div className="animate-pulse orbitron text-xl text-[#00BFFF] font-black tracking-widest">
-          ⚡ ACCESSING CLOUD_DATABASE...
+        <div className="animate-pulse cinzel text-xl text-[#00BFFF] font-black tracking-widest">
+          ⚡ Unrolling encrypted scrolls...
         </div>
       </div>
     );
@@ -128,11 +129,11 @@ function AdminContent() {
   if (error) {
     return (
       <div className="container mt-20 max-w-md mx-auto z-10 relative px-4">
-        <div className="glass-card p-1 bg-[#8B0000]/20">
-          <div className="bg-[#1a1a2e]/90 p-8 rounded-sm text-center">
-            <h2 className="text-[#C0392B] orbitron font-black mb-4 tracking-tighter uppercase">Security Breach / Error</h2>
-            <p className="text-white mb-6 font-mono text-xs">{error}</p>
-            <button onClick={() => fetchQuestions()} className="tech-button px-8 py-3 text-xs">Re-Connect</button>
+        <div className="magic-border p-1 bg-[#8B0000]/20">
+          <div className="magic-border-inner bg-[#1a1a2e]/90 p-8 rounded-sm text-center">
+            <h2 className="text-[#C0392B] cinzel font-black mb-4 tracking-widest uppercase">Magic Interrupted</h2>
+            <p className="text-white mb-6 font-serif text-sm">{error}</p>
+            <button onClick={() => fetchQuestions()} className="wax-seal px-8 py-3 cinzel font-bold text-xs uppercase tracking-widest">Restore Link</button>
           </div>
         </div>
       </div>
@@ -140,83 +141,79 @@ function AdminContent() {
   }
 
   return (
-    <div className="container max-w-[850px] mx-auto py-10 px-4 relative z-10">
-      {/* Background Storm */}
-      <div className="lightning-flash" />
-      {clouds.map(c => (
-        <div key={c.id} className="cloud-particle" style={{ top: c.top, width: c.size, height: c.size, animation: `cloudDrift ${c.duration} linear infinite`, animationDelay: c.delay }} />
+    <div className="container max-w-[800px] mx-auto py-10 px-4 relative z-10">
+      {/* Background Particles */}
+      {particles.map(p => (
+        <div key={p.id} className="particle" style={{ left: p.left, width: p.size, height: p.size, animation: `floatUp ${p.duration} linear infinite`, animationDelay: p.delay }} />
       ))}
 
       {isPollingError && (
-        <div className="mb-8 bg-[#8B0000]/20 border border-[#8B0000] p-3 rounded flex items-center justify-between text-white text-[10px] orbitron tracking-widest animate-pulse">
+        <div className="mb-8 bg-[#8B0000]/20 border border-[#8B0000] p-3 rounded flex items-center justify-between text-white text-xs cinzel tracking-widest animate-pulse">
           <span className="flex items-center">
-            <span className="mr-2">⚡</span> UPLINK STABILITY CRITICAL...
+            <span className="mr-2">⚡</span> Uplink stability critical...
           </span>
           <button onClick={() => fetchQuestions()} className="underline font-bold">RE-STABILIZE</button>
         </div>
       )}
 
-      <div className="sticky top-[60px] bg-[#0A0810]/90 backdrop-blur-md z-30 pb-6 mb-10 border-b border-[#2a2a4e]">
+      <div className="sticky top-[60px] bg-[#1a1a2e]/90 backdrop-blur-md z-30 pb-6 mb-10 border-b border-[#2a2a4e]">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-black text-white orbitron tracking-tighter">
-              CL<span className="text-[#00BFFF]">⚡</span>UDED
+            <h1 className="text-3xl font-black text-white cinzel tracking-widest">
+              🏰 Professor's Study
             </h1>
-            <p className="text-[#666688] font-bold text-[10px] tracking-[0.3em] uppercase mt-2">
-              System Control Tower
+            <p className="text-[#00BFFF] cinzel text-[10px] tracking-[0.3em] uppercase mt-2">
+              Clouded — Reviewing student inquiries
             </p>
           </div>
           <div className="text-right flex flex-col items-end">
-            <div className="flex items-center text-[#00BFFF] font-bold text-[10px] tracking-widest mb-2">
+            <div className="flex items-center text-[#666688] cinzel text-[10px] tracking-widest mb-2">
               <span className="w-2 h-2 rounded-full bg-[#00FF88] mr-2 shadow-[0_0_8px_rgba(0,255,136,0.6)] animate-pulse"></span>
-              <span>LIVE_RADAR</span>
+              <span className="animate-[candleFlicker_2s_infinite]">🕯️ Watching for scrolls...</span>
             </div>
-            <span className="status-badge badge-blue">
-              {questions.length} DATA_PACKETS_PENDING
+            <span className="px-3 py-1 bg-[#00BFFF]/10 text-[#00BFFF] text-[10px] font-bold rounded-full border border-[#00BFFF]/30 cinzel tracking-widest">
+              {questions.length} scrolls pending
             </span>
           </div>
         </div>
       </div>
 
-      <div className="text-center mb-12 flex justify-center items-center space-x-4">
-        <div className="h-[1px] w-20 bg-gradient-to-r from-transparent to-[#2a2a4e]" />
-        <span className="text-[#666688] font-bold text-[10px] tracking-[0.5em] uppercase">Incoming Inquiries</span>
-        <div className="h-[1px] w-20 bg-gradient-to-l from-transparent to-[#2a2a4e]" />
+      <div className="text-center mb-12 text-[#666688] cinzel text-xs tracking-[0.5em]">
+        ═══✦ AWAITING ANSWERS ✦═══
       </div>
 
       {questions.length === 0 ? (
-        <div className="py-32 text-center glass-card bg-[#1a1a2e]/30 rounded-sm">
-          <span className="text-6xl block mb-6 animate-pulse opacity-20">☁️</span>
-          <h2 className="text-xl font-bold text-white orbitron tracking-widest">CLOUD_SYNC_COMPLETE</h2>
-          <p className="text-[#666688] mt-4 font-mono text-xs uppercase tracking-widest">No active threats or inquiries detected.</p>
+        <div className="py-32 text-center parchment-scroll magic-border p-1 bg-[#1a1a2e]/30 rounded-sm">
+          <span className="text-6xl block mb-6 animate-pulse opacity-20">🔮</span>
+          <h2 className="text-xl font-black text-white cinzel tracking-widest">The crystal ball is clear</h2>
+          <p className="#666688 mt-4 cinzel text-sm tracking-widest uppercase">No inquiries detected in the cloud</p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {questions.map((q) => (
-            <div key={q.id} className="glass-card p-1 rounded-sm group hover:border-[#00BFFF]/50 transition-all duration-500">
-              <div className="bg-[#1a1a2e]/80 overflow-hidden border-l-4 border-l-[#8B0000] group-hover:border-l-[#00BFFF]">
-                <div className="p-6 border-b border-[#2a2a4e] bg-black/40 flex justify-between items-start">
+            <div key={q.id} className="parchment-scroll magic-border p-1 rounded-sm group hover:scale-[1.01] transition-transform duration-300">
+              <div className="magic-border-inner bg-[#1a1a2e]/80 overflow-hidden shadow-xl border-l-4 border-l-[#8B0000] group-hover:border-l-[#00BFFF]">
+                <div className="p-6 border-b border-[#2a2a4e] bg-black/20 flex justify-between items-start">
                   <div>
-                    <h3 className="font-black text-white orbitron tracking-tighter text-lg flex items-center">
-                      <span className="mr-3 text-[#00BFFF] opacity-60">ID:</span> {q.name || 'ANONYMOUS_USER'}
+                    <h3 className="font-black text-white cinzel tracking-widest text-lg flex items-center">
+                      <span className="mr-3 text-sm opacity-60">🧑‍🎓</span> {q.name || 'Anonymous Student'}
                     </h3>
-                    <p className="text-[10px] text-[#00BFFF] font-bold tracking-widest mt-2 flex items-center opacity-80 uppercase">
-                      <span className="mr-3 text-[#666688] opacity-60 font-mono">SECTOR:</span> {q.courseSection}
+                    <p className="text-xs text-[#00BFFF] cinzel tracking-widest mt-2 flex items-center opacity-80 uppercase">
+                      <span className="mr-3 opacity-60 italic font-serif lowercase text-[#666688]">sector:</span> {q.courseSection}
                     </p>
                   </div>
                   <div className="text-right">
-                    <small className="text-[#666688] font-mono text-[10px] uppercase block">
+                    <small className="#666688 cinzel text-[10px] uppercase tracking-widest block opacity-60">
                       {new Date(q.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </small>
-                    <small className="text-[#666688] font-mono text-[8px] opacity-40">
+                    <small className="#666688 cinzel text-[8px] tracking-widest opacity-40">
                       {new Date(q.ts).toLocaleDateString()}
                     </small>
                   </div>
                 </div>
                 
-                <div className="p-8 relative bg-black/20">
-                  <div className="absolute top-2 right-2 text-[8px] font-mono text-[#666688] opacity-20">RAW_DATA_LOG</div>
-                  <p className="text-lg text-white leading-relaxed font-semibold whitespace-pre-wrap">
+                <div className="p-8 relative bg-black/10">
+                  <p className="text-lg text-white leading-relaxed italic font-serif whitespace-pre-wrap">
                     "{q.question}"
                   </p>
                 </div>
@@ -224,15 +221,15 @@ function AdminContent() {
                 <div className="p-4 bg-black/40 border-t border-[#2a2a4e] flex justify-end space-x-4">
                   <button 
                     onClick={() => handleDone(q.id)}
-                    className="tech-button px-6 py-2 text-[10px] rounded-sm bg-transparent border-[#00BFFF] text-[#00BFFF] hover:bg-[#00BFFF] hover:text-black"
+                    className="wax-seal px-6 py-2 cinzel font-black text-[10px] tracking-widest uppercase rounded-sm"
                   >
-                    RESOLVE
+                    ✓ Answered
                   </button>
                   <button 
                     onClick={() => handleDelete(q.id)}
-                    className="px-4 py-2 border border-[#8B0000] text-[#C0392B] orbitron font-black text-[10px] tracking-widest uppercase hover:bg-[#8B0000] hover:text-white transition-all duration-300 rounded-sm"
+                    className="px-4 py-2 border border-[#8B0000] text-[#C0392B] cinzel font-black text-[10px] tracking-widest uppercase hover:bg-[#8B0000] hover:text-white transition-all duration-300 rounded-sm"
                   >
-                    PURGE
+                    🗑
                   </button>
                 </div>
               </div>
@@ -274,12 +271,12 @@ function Admin() {
     return (
       <Authenticator hideSignUp={true}>
         {({ signOut, user }) => (
-          <main className="min-h-screen relative overflow-hidden bg-[#0A0810]">
+          <main className="min-h-screen relative overflow-hidden bg-[#1a1a2e]">
             <div className="bg-[#1a1a2e] border-b border-[#2a2a4e] px-4 py-3 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
-              <Link to="/" className="text-[#00BFFF] orbitron font-black tracking-widest text-[10px] hover:underline">← EXIT_TERMINAL</Link>
+              <Link to="/" className="text-[#00BFFF] cinzel font-black tracking-widest text-xs hover:underline">← Home</Link>
               <div className="flex items-center">
-                <span className="mr-6 text-[10px] text-[#666688] font-bold tracking-widest italic hidden sm:block">USER_AUTH: {user?.username}</span>
-                <button onClick={signOut} className="tech-button px-4 py-1.5 text-[9px] rounded-sm">LOCK_STATION</button>
+                <span className="mr-6 text-[10px] text-[#666688] cinzel tracking-widest italic hidden sm:block">USER_AUTH: {user?.username}</span>
+                <button onClick={signOut} className="wax-seal px-4 py-1.5 cinzel font-black text-[9px] tracking-[0.2em] rounded-sm uppercase">Leave Study</button>
               </div>
             </div>
             <AdminContent />
@@ -291,22 +288,22 @@ function Admin() {
 
   if (!authenticated) {
     return (
-      <div className="container flex items-center justify-center min-h-screen px-4 bg-[#0A0810]">
+      <div className="container flex items-center justify-center min-h-screen px-4 bg-[#1a1a2e]">
         <div className="w-full max-w-md z-10">
-          <div className="glass-card p-1 rounded-sm shadow-[0_0_60px_rgba(0,191,255,0.1)]">
-            <div className="bg-[#1a1a2e] p-10 rounded-sm text-center">
-              <h1 className="text-3xl font-black mb-8 text-white orbitron tracking-tighter">ACCESS_PORTAL</h1>
+          <div className="magic-border p-1 rounded-sm shadow-[0_0_60px_rgba(0,191,255,0.1)]">
+            <div className="magic-border-inner bg-[#1a1a2e] p-10 rounded-sm text-center">
+              <h1 className="text-3xl font-black mb-8 text-white cinzel tracking-[0.2em] uppercase">Admin Login</h1>
               <form onSubmit={handleLocalLogin} className="space-y-8">
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="[ENTER_PASSCODE]"
-                  className="tech-input w-full p-4 rounded-sm font-bold text-sm tracking-widest text-center"
+                  placeholder="[ENTER_CREDENTIALS]"
+                  className="ink-field w-full p-4 rounded-sm cinzel text-sm placeholder:text-[#666688]/40 tracking-widest text-center"
                 />
-                <button type="submit" className="tech-button w-full py-4 text-xs">INITIATE_AUTH</button>
+                <button type="submit" className="wax-seal w-full py-4 cinzel font-black text-xs tracking-[0.3em] uppercase rounded-sm text-center">Enter Study</button>
               </form>
-              <Link to="/" className="text-[#666688] font-bold text-[10px] tracking-widest hover:underline mt-8 block opacity-60">← TERMINATE_SESSION</Link>
+              <Link to="/" className="text-[#666688] cinzel text-[10px] tracking-widest hover:underline mt-8 block font-medium opacity-60">Back to Site</Link>
             </div>
           </div>
         </div>
@@ -315,10 +312,10 @@ function Admin() {
   }
 
   return (
-    <main className="min-h-screen relative overflow-hidden bg-[#0A0810]">
+    <main className="min-h-screen relative overflow-hidden bg-[#1a1a2e]">
       <div className="bg-[#1a1a2e] border-b border-[#2a2a4e] px-4 py-3 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
-        <Link to="/" className="text-[#00BFFF] orbitron font-black tracking-widest text-[10px] hover:underline">← EXIT_TERMINAL</Link>
-        <button onClick={handleLogout} className="tech-button px-4 py-1.5 text-[9px] rounded-sm">LOCK_STATION</button>
+        <Link to="/" className="text-[#00BFFF] cinzel font-black tracking-widest text-xs hover:underline">← Home</Link>
+        <button onClick={handleLogout} className="wax-seal px-4 py-1.5 cinzel font-black text-[9px] tracking-[0.2em] rounded-sm uppercase">Leave Study</button>
       </div>
       <AdminContent />
     </main>
