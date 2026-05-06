@@ -93,6 +93,12 @@ resource "aws_amplify_app" "main" {
     status = "200"
     target = "/index.html"
   }
+
+  custom_rule {
+    source = "/<*>"
+    status = "404-200"
+    target = "/index.html"
+  }
 }
 
 resource "aws_amplify_branch" "main" {
