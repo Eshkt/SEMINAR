@@ -118,7 +118,7 @@ app.post('/questions', async (req, res, next) => {
     
     const text = sanitizeInput(rawText);
     if (text.length === 0) return res.status(400).json({ error: 'question required' });
-    if (text.length > 280) return res.status(400).json({ error: 'TOO_LONG' });
+    if (text.length > 500) return res.status(400).json({ error: 'TOO_LONG' });
 
     const filter = await getFilter();
     if (filter.isProfane(text)) return res.status(400).json({ error: 'PROFANITY' });

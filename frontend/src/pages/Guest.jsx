@@ -69,7 +69,7 @@ function Guest() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex justify-center items-center py-10 px-4 bg-[#1a1a2e]">
+    <div className="min-h-screen relative overflow-hidden flex justify-center items-center py-10 px-4 bg-[#0A0800]">
       {/* Magical Background Particles */}
       {particles.map(p => (
         <div 
@@ -87,79 +87,79 @@ function Guest() {
 
       <div className="w-full max-w-[550px] z-10">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-black text-white cinzel tracking-widest mb-2 animate-[candleFlicker_3s_infinite]">
+          <h1 className="text-4xl font-black text-[#FFD700] cinzel tracking-widest mb-2">
             🦉 The Owlery
           </h1>
-          <p className="text-[#00BFFF] font-semibold tracking-[0.2em] uppercase text-xs cinzel">
-            Clouded — Unlocking the Secrets
+          <p className="text-[#FFD700] font-semibold tracking-[0.2em] uppercase text-xs cinzel">
+            Hogwarts — The Great Hall
           </p>
-          <div className="mt-4 text-[#2a2a4e]">───✦───</div>
+          <div className="mt-4 text-[#B8860B]">───✦───</div>
         </div>
 
         <div className="magic-border p-1 rounded-sm">
-          <div className="magic-border-inner bg-[#1a1a2e]/80 backdrop-blur-md p-8 rounded-sm shadow-[0_0_40px_rgba(0,191,255,0.15)] relative overflow-hidden">
+          <div className="magic-border-inner bg-[#1A1200]/95 backdrop-blur-md p-8 rounded-sm shadow-[0_0_40px_rgba(255,215,0,0.2)] relative overflow-hidden">
             {/* Corner highlights */}
-            <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-[#00BFFF]/10 to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-[#FFD700]/10 to-transparent pointer-events-none" />
             
             {success && (
-              <div className="p-4 mb-8 bg-[#00BFFF]/10 border border-[#00BFFF] text-white rounded text-center cinzel text-sm animate-pulse">
-                🦉 Your owl has been sent! Data uploaded to Cloud.
+              <div className="p-4 mb-8 bg-[#FFD700]/10 border border-[#FFD700] text-[#FFFDF0] rounded text-center cinzel text-sm">
+                🦉 Your owl has been sent to the Great Hall!
               </div>
             )}
 
             {error && (
-              <div className="p-4 mb-8 bg-[#8B0000]/20 border border-[#8B0000] text-white rounded text-center cinzel text-sm">
+              <div className="p-4 mb-8 bg-[#FF4444]/20 border border-[#FF4444] text-[#FF4444] rounded text-center cinzel text-sm font-bold">
                 {error}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-8 relative">
               <div className="flex flex-col group">
-                <label className="text-[#00BFFF] cinzel text-[10px] font-bold tracking-[0.2em] mb-2 flex justify-between">
+                <label className="text-[#FFD700] cinzel text-[10px] font-bold tracking-[0.2em] mb-2 flex justify-between">
                   <span>✦ YOUR NAME</span>
-                  <span className="text-[#666688] font-normal lowercase">(optional)</span>
+                  <span className="text-[#C8A951] font-normal lowercase">(optional)</span>
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter name, or remain anonymous..."
-                  className="ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[#666688]/40"
+                  className="ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[#C8A951]/40"
                   disabled={loading}
                 />
               </div>
 
               <div className="flex flex-col">
-                <label className="text-[#00BFFF] cinzel text-[10px] font-bold tracking-[0.2em] mb-2">
+                <label className="text-[#FFD700] cinzel text-[10px] font-bold tracking-[0.2em] mb-2">
                   ✦ HOUSE & YEAR
                 </label>
                 <input
                   type="text"
                   value={courseSection}
                   onChange={(e) => setCourseSection(e.target.value)}
-                  placeholder="e.g. Gryffindor, 3rd Year"
-                  className={`ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[#666688]/40 ${formErrors.courseSection ? 'border-[#8B0000]' : ''}`}
+                  placeholder="1ITA"
+                  className={`ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[#C8A951]/40 ${formErrors.courseSection ? 'border-[#FF4444]' : ''}`}
                   disabled={loading}
                 />
-                {formErrors.courseSection && <span className="text-[#FFD700] text-[10px] cinzel mt-2 tracking-wider">{formErrors.courseSection}</span>}
+                {formErrors.courseSection && <span className="text-[#FF4444] text-[10px] cinzel mt-2 tracking-wider font-bold">{formErrors.courseSection}</span>}
               </div>
 
               <div className="flex flex-col">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-[#00BFFF] cinzel text-[10px] font-bold tracking-[0.2em]">
+                  <label className="text-[#FFD700] cinzel text-[10px] font-bold tracking-[0.2em]">
                     ✦ YOUR INQUIRY TO THE PROFESSOR
                   </label>
-                  <span className="text-[#666688] text-[10px] cinzel">{question.length} / 500 ✦</span>
+                  <span className="text-[#C8A951] text-[10px] cinzel">{question.length} / 500 ✦</span>
                 </div>
                 <textarea
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Inscribe your encrypted inquiry here..."
-                  className={`ink-field p-4 rounded-sm w-full min-h-[160px] cinzel text-sm placeholder:text-[#666688]/40 resize-none ${formErrors.question ? 'border-[#8B0000]' : ''}`}
+                  placeholder="Inscribe your inquiry here..."
+                  className={`ink-field p-4 rounded-sm w-full min-h-[160px] cinzel text-sm placeholder:text-[#C8A951]/40 resize-none ${formErrors.question ? 'border-[#FF4444]' : ''}`}
                   disabled={loading}
                   maxLength={500}
                 />
-                {formErrors.question && <span className="text-[#FFD700] text-[10px] cinzel mt-2 tracking-wider">{formErrors.question}</span>}
+                {formErrors.question && <span className="text-[#FF4444] text-[10px] cinzel mt-2 tracking-wider font-bold">{formErrors.question}</span>}
               </div>
 
               <button
@@ -179,8 +179,8 @@ function Guest() {
           </div>
         </div>
 
-        <div className="mt-12 text-center text-[#666688]/40 text-[10px] tracking-[0.5em] cinzel uppercase">
-          ✦ CL⚡UDED — Cisco Networking Academy Gateway ✦
+        <div className="mt-12 text-center text-[#C8A951]/40 text-[10px] tracking-[0.5em] cinzel uppercase">
+          ✦ HOGWARTS — THE GREAT HALL ✦
         </div>
       </div>
     </div>

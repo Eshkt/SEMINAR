@@ -119,7 +119,7 @@ function AdminContent() {
   if (loading) {
     return (
       <div className="container mt-40 text-center z-10 relative">
-        <div className="animate-pulse cinzel text-xl text-[#00BFFF] font-black tracking-widest">
+        <div className="animate-pulse cinzel text-xl text-[#FFD700] font-black tracking-widest">
           ⚡ Unrolling encrypted scrolls...
         </div>
       </div>
@@ -129,10 +129,10 @@ function AdminContent() {
   if (error) {
     return (
       <div className="container mt-20 max-w-md mx-auto z-10 relative px-4">
-        <div className="magic-border p-1 bg-[#8B0000]/20">
-          <div className="magic-border-inner bg-[#1a1a2e]/90 p-8 rounded-sm text-center">
-            <h2 className="text-[#C0392B] cinzel font-black mb-4 tracking-widest uppercase">Magic Interrupted</h2>
-            <p className="text-white mb-6 font-serif text-sm">{error}</p>
+        <div className="magic-border p-1 bg-[#FF4444]/20">
+          <div className="magic-border-inner bg-[#0A0800]/90 p-8 rounded-sm text-center">
+            <h2 className="text-[#FF4444] cinzel font-black mb-4 tracking-widest uppercase">Magic Interrupted</h2>
+            <p className="text-[#FFFDF0] mb-6 font-serif text-sm">{error}</p>
             <button onClick={() => fetchQuestions()} className="wax-seal px-8 py-3 cinzel font-bold text-xs uppercase tracking-widest">Restore Link</button>
           </div>
         </div>
@@ -148,7 +148,7 @@ function AdminContent() {
       ))}
 
       {isPollingError && (
-        <div className="mb-8 bg-[#8B0000]/20 border border-[#8B0000] p-3 rounded flex items-center justify-between text-white text-xs cinzel tracking-widest animate-pulse">
+        <div className="mb-8 bg-[#FF4444]/20 border border-[#FF4444] p-3 rounded flex items-center justify-between text-[#FFFDF0] text-xs cinzel tracking-widest animate-pulse">
           <span className="flex items-center">
             <span className="mr-2">⚡</span> Uplink stability critical...
           </span>
@@ -156,69 +156,69 @@ function AdminContent() {
         </div>
       )}
 
-      <div className="sticky top-[60px] bg-[#1a1a2e]/90 backdrop-blur-md z-30 pb-6 mb-10 border-b border-[#2a2a4e]">
+      <div className="sticky top-[60px] bg-[#0A0800]/90 backdrop-blur-md z-30 pb-6 mb-10 border-b border-[#B8860B]">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-black text-white cinzel tracking-widest">
+            <h1 className="text-3xl font-black text-[#FFD700] cinzel tracking-widest">
               🏰 Professor's Study
             </h1>
-            <p className="text-[#00BFFF] cinzel text-[10px] tracking-[0.3em] uppercase mt-2">
-              Clouded — Reviewing student inquiries
+            <p className="text-[#FFD700] cinzel text-[10px] tracking-[0.3em] uppercase mt-2">
+              Hogwarts — Reviewing student inquiries
             </p>
           </div>
           <div className="text-right flex flex-col items-end">
-            <div className="flex items-center text-[#666688] cinzel text-[10px] tracking-widest mb-2">
-              <span className="w-2 h-2 rounded-full bg-[#00FF88] mr-2 shadow-[0_0_8px_rgba(0,255,136,0.6)] animate-pulse"></span>
-              <span className="animate-[candleFlicker_2s_infinite]">🕯️ Watching for scrolls...</span>
+            <div className="flex items-center text-[#C8A951] cinzel text-[10px] tracking-widest mb-2">
+              <span className="w-2 h-2 rounded-full bg-[#FFD700] mr-2 shadow-[0_0_8px_rgba(255,215,0,0.6)] animate-pulse"></span>
+              <span>🕯️ Watching for scrolls...</span>
             </div>
-            <span className="px-3 py-1 bg-[#00BFFF]/10 text-[#00BFFF] text-[10px] font-bold rounded-full border border-[#00BFFF]/30 cinzel tracking-widest">
+            <span className="px-3 py-1 bg-[#FFD700]/10 text-[#FFD700] text-[10px] font-bold rounded-full border border-[#FFD700]/30 cinzel tracking-widest">
               {questions.length} scrolls pending
             </span>
           </div>
         </div>
       </div>
 
-      <div className="text-center mb-12 text-[#666688] cinzel text-xs tracking-[0.5em]">
+      <div className="text-center mb-12 text-[#C8A951] cinzel text-xs tracking-[0.5em]">
         ═══✦ AWAITING ANSWERS ✦═══
       </div>
 
       {questions.length === 0 ? (
-        <div className="py-32 text-center parchment-scroll magic-border p-1 bg-[#1a1a2e]/30 rounded-sm">
+        <div className="py-32 text-center parchment-scroll magic-border p-1 bg-[#1A1200]/30 rounded-sm">
           <span className="text-6xl block mb-6 animate-pulse opacity-20">🔮</span>
-          <h2 className="text-xl font-black text-white cinzel tracking-widest">The crystal ball is clear</h2>
-          <p className="#666688 mt-4 cinzel text-sm tracking-widest uppercase">No inquiries detected in the cloud</p>
+          <h2 className="text-xl font-black text-[#FFD700] cinzel tracking-widest">The crystal ball is clear</h2>
+          <p className="text-[#C8A951] mt-4 cinzel text-sm tracking-widest uppercase">No inquiries detected in the cloud</p>
         </div>
       ) : (
         <div className="space-y-10">
           {questions.map((q) => (
             <div key={q.id} className="parchment-scroll magic-border p-1 rounded-sm group hover:scale-[1.01] transition-transform duration-300">
-              <div className="magic-border-inner bg-[#1a1a2e]/80 overflow-hidden shadow-xl border-l-4 border-l-[#8B0000] group-hover:border-l-[#00BFFF]">
-                <div className="p-6 border-b border-[#2a2a4e] bg-black/20 flex justify-between items-start">
+              <div className="magic-border-inner bg-[#1A1200]/80 overflow-hidden shadow-xl border-l-4 border-l-[#B8860B] group-hover:border-l-[#FFD700]">
+                <div className="p-6 border-b border-[#B8860B] bg-black/20 flex justify-between items-start">
                   <div>
-                    <h3 className="font-black text-white cinzel tracking-widest text-lg flex items-center">
+                    <h3 className="font-black text-[#FFFDF0] cinzel tracking-widest text-lg flex items-center">
                       <span className="mr-3 text-sm opacity-60">🧑‍🎓</span> {q.name || 'Anonymous Student'}
                     </h3>
-                    <p className="text-xs text-[#00BFFF] cinzel tracking-widest mt-2 flex items-center opacity-80 uppercase">
-                      <span className="mr-3 opacity-60 italic font-serif lowercase text-[#666688]">sector:</span> {q.courseSection}
+                    <p className="text-xs text-[#FFD700] cinzel tracking-widest mt-2 flex items-center opacity-80 uppercase">
+                      <span className="mr-3 opacity-60 italic font-serif lowercase text-[#C8A951]">sector:</span> {q.courseSection}
                     </p>
                   </div>
                   <div className="text-right">
-                    <small className="#666688 cinzel text-[10px] uppercase tracking-widest block opacity-60">
+                    <small className="text-[#C8A951] cinzel text-[10px] uppercase tracking-widest block opacity-60">
                       {new Date(q.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </small>
-                    <small className="#666688 cinzel text-[8px] tracking-widest opacity-40">
+                    <small className="text-[#C8A951] cinzel text-[8px] tracking-widest opacity-40">
                       {new Date(q.ts).toLocaleDateString()}
                     </small>
                   </div>
                 </div>
                 
                 <div className="p-8 relative bg-black/10">
-                  <p className="text-lg text-white leading-relaxed italic font-serif whitespace-pre-wrap">
+                  <p className="text-lg text-[#FFFDF0] leading-relaxed italic font-serif whitespace-pre-wrap">
                     "{q.question}"
                   </p>
                 </div>
 
-                <div className="p-4 bg-black/40 border-t border-[#2a2a4e] flex justify-end space-x-4">
+                <div className="p-4 bg-black/40 border-t border-[#B8860B] flex justify-end space-x-4">
                   <button 
                     onClick={() => handleDone(q.id)}
                     className="wax-seal px-6 py-2 cinzel font-black text-[10px] tracking-widest uppercase rounded-sm"
@@ -227,7 +227,7 @@ function AdminContent() {
                   </button>
                   <button 
                     onClick={() => handleDelete(q.id)}
-                    className="px-4 py-2 border border-[#8B0000] text-[#C0392B] cinzel font-black text-[10px] tracking-widest uppercase hover:bg-[#8B0000] hover:text-white transition-all duration-300 rounded-sm"
+                    className="px-4 py-2 border border-[#FF4444] text-[#FF4444] cinzel font-black text-[10px] tracking-widest uppercase hover:bg-[#FF4444] hover:text-white transition-all duration-300 rounded-sm"
                   >
                     🗑
                   </button>
@@ -271,11 +271,11 @@ function Admin() {
     return (
       <Authenticator hideSignUp={true}>
         {({ signOut, user }) => (
-          <main className="min-h-screen relative overflow-hidden bg-[#1a1a2e]">
-            <div className="bg-[#1a1a2e] border-b border-[#2a2a4e] px-4 py-3 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
-              <Link to="/" className="text-[#00BFFF] cinzel font-black tracking-widest text-xs hover:underline">← Home</Link>
+          <main className="min-h-screen relative overflow-hidden bg-[#0A0800]">
+            <div className="bg-[#0A0800] border-b border-[#B8860B] px-4 py-3 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
+              <Link to="/" className="text-[#FFD700] cinzel font-black tracking-widest text-xs hover:underline">← Home</Link>
               <div className="flex items-center">
-                <span className="mr-6 text-[10px] text-[#666688] cinzel tracking-widest italic hidden sm:block">USER_AUTH: {user?.username}</span>
+                <span className="mr-6 text-[10px] text-[#C8A951] cinzel tracking-widest italic hidden sm:block">USER_AUTH: {user?.username}</span>
                 <button onClick={signOut} className="wax-seal px-4 py-1.5 cinzel font-black text-[9px] tracking-[0.2em] rounded-sm uppercase">Leave Study</button>
               </div>
             </div>
@@ -288,22 +288,22 @@ function Admin() {
 
   if (!authenticated) {
     return (
-      <div className="container flex items-center justify-center min-h-screen px-4 bg-[#1a1a2e]">
+      <div className="container flex items-center justify-center min-h-screen px-4 bg-[#0A0800]">
         <div className="w-full max-w-md z-10">
-          <div className="magic-border p-1 rounded-sm shadow-[0_0_60px_rgba(0,191,255,0.1)]">
-            <div className="magic-border-inner bg-[#1a1a2e] p-10 rounded-sm text-center">
-              <h1 className="text-3xl font-black mb-8 text-white cinzel tracking-[0.2em] uppercase">Admin Login</h1>
+          <div className="magic-border p-1 rounded-sm shadow-[0_0_60px_rgba(255,215,0,0.1)]">
+            <div className="magic-border-inner bg-[#0A0800] p-10 rounded-sm text-center">
+              <h1 className="text-3xl font-black mb-8 text-[#FFD700] cinzel tracking-[0.2em] uppercase">Admin Login</h1>
               <form onSubmit={handleLocalLogin} className="space-y-8">
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="[ENTER_CREDENTIALS]"
-                  className="ink-field w-full p-4 rounded-sm cinzel text-sm placeholder:text-[#666688]/40 tracking-widest text-center"
+                  className="ink-field w-full p-4 rounded-sm cinzel text-sm placeholder:text-[#C8A951]/40 tracking-widest text-center"
                 />
                 <button type="submit" className="wax-seal w-full py-4 cinzel font-black text-xs tracking-[0.3em] uppercase rounded-sm text-center">Enter Study</button>
               </form>
-              <Link to="/" className="text-[#666688] cinzel text-[10px] tracking-widest hover:underline mt-8 block font-medium opacity-60">Back to Site</Link>
+              <Link to="/" className="text-[#C8A951] cinzel text-[10px] tracking-widest hover:underline mt-8 block font-medium opacity-60">Back to Site</Link>
             </div>
           </div>
         </div>
@@ -312,9 +312,9 @@ function Admin() {
   }
 
   return (
-    <main className="min-h-screen relative overflow-hidden bg-[#1a1a2e]">
-      <div className="bg-[#1a1a2e] border-b border-[#2a2a4e] px-4 py-3 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
-        <Link to="/" className="text-[#00BFFF] cinzel font-black tracking-widest text-xs hover:underline">← Home</Link>
+    <main className="min-h-screen relative overflow-hidden bg-[#0A0800]">
+      <div className="bg-[#0A0800] border-b border-[#B8860B] px-4 py-3 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
+        <Link to="/" className="text-[#FFD700] cinzel font-black tracking-widest text-xs hover:underline">← Home</Link>
         <button onClick={handleLogout} className="wax-seal px-4 py-1.5 cinzel font-black text-[9px] tracking-[0.2em] rounded-sm uppercase">Leave Study</button>
       </div>
       <AdminContent />
