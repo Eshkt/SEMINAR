@@ -140,11 +140,11 @@ app.post('/questions', async (req, res, next) => {
   }
 });
 
-// GET /questions - Protected admin list
-app.get('/questions', adminMiddleware, async (req, res, next) => {
+// GET /questions/approved - Public list of approved questions
+app.get('/questions/approved', async (req, res, next) => {
   try {
     const result = await pool.query(
-      "SELECT id, name, course_section as \"courseSection\", txt as question, ts FROM questions WHERE stat != 'done' ORDER BY ts ASC"
+      "SELECT id, name, course_section as \"courseSection\", txt as question, ts FROM questions WHERE stat = 'apprv' ORDER BY ts DESC"
     );
     res.json(result.rows);
   } catch (err) {
@@ -152,7 +152,39 @@ app.get('/questions', adminMiddleware, async (req, res, next) => {
   }
 });
 
-// PATCH /questions/:id/done - Mark as done
+// GET /questions - Protected admin list
+app.get('/questions', adminMiddleware, async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, name, course_section as \"courseSection\", txt as question, ts, stat FROM questions WHERE stat != 'done' ORDER BY ts ASC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /questions/:id/status - Update question status
+app.patch('/questions/:id/status', adminMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const validStatuses = ['pend', 'apprv', 'flag', 'done'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    const updateResult = await pool.query("UPDATE questions SET stat = $1 WHERE id = $2", [status, id]);
+    if (updateResult.rowCount === 0) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+    await realtime.publish('questionStatusUpdated', { id, status });
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /questions/:id/done - Mark as done (Legacy/Shortcut)
 app.patch('/questions/:id/done', adminMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;

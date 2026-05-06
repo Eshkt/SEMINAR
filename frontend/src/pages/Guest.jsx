@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRealtimeQuestions } from '../hooks/useRealtimeQuestions';
 
 const API_URL = import.meta.env.VITE_API_URL || "https://d11ffcb0dwbou3.cloudfront.net";
 
@@ -11,6 +12,7 @@ function Guest() {
   const [error, setError] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const [particles, setParticles] = useState([]);
+  const [approvedQuestions] = useRealtimeQuestions([]);
 
   useEffect(() => {
     // Generate magical gold particles
@@ -26,8 +28,8 @@ function Guest() {
 
   const validate = () => {
     const errs = {};
-    if (!courseSection.trim()) errs.courseSection = "Target House/Year is required";
-    if (!question.trim()) errs.question = "Inquiry is required";
+    if (!courseSection.trim()) errs.courseSection = "Year & Section is required";
+    if (!question.trim()) errs.question = "Question is required";
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -62,15 +64,15 @@ function Guest() {
         throw new Error('Transmission failed');
       }
     } catch (err) {
-      setError('⚡ MAGIC INTERRUPTED. RETRY TRANSMISSION.');
+      setError('⚡ CONNECTION INTERRUPTED. RETRY TRANSMISSION.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex justify-center items-center py-10 px-4 bg-[#0A0800]">
-      {/* Magical Background Particles */}
+    <div className="min-h-screen relative overflow-hidden flex flex-col items-center py-20 px-4 bg-[#0A0800]">
+      {/* Background Particles */}
       {particles.map(p => (
         <div 
           key={p.id} 
@@ -88,10 +90,13 @@ function Guest() {
       <div className="w-full max-w-[550px] z-10">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-[#FFD700] cinzel tracking-widest mb-2">
-            🦉 The Owlery
+            CL⚡UDED
           </h1>
-          <p className="text-[#FFD700] font-semibold tracking-[0.2em] uppercase text-xs cinzel">
-            Hogwarts — The Great Hall
+          <p className="text-[#FFD700] font-semibold tracking-[0.2em] uppercase text-xs cinzel mb-1">
+            Unlocking the Secrets of Cloud and Cybersecurity
+          </p>
+          <p className="text-[#FFD700] text-[10px] cinzel tracking-[0.3em] uppercase opacity-80">
+            Presented by CNAG-CICS
           </p>
           <div className="mt-4 text-[#B8860B]">───✦───</div>
         </div>
@@ -103,7 +108,7 @@ function Guest() {
             
             {success && (
               <div className="p-4 mb-8 bg-[#FFD700]/10 border border-[#FFD700] text-[#FFFDF0] rounded text-center cinzel text-sm">
-                🦉 Your owl has been sent to the Great Hall!
+                ⚡ Your question has been sent to the cloud!
               </div>
             )}
 
@@ -123,7 +128,7 @@ function Guest() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter name, or remain anonymous..."
+                  placeholder="Enter your name"
                   className="ink-field p-4 rounded-sm w-full cinzel text-sm placeholder:text-[#C8A951]/40"
                   disabled={loading}
                 />
@@ -131,7 +136,7 @@ function Guest() {
 
               <div className="flex flex-col">
                 <label className="text-[#FFD700] cinzel text-[10px] font-bold tracking-[0.2em] mb-2">
-                  ✦ HOUSE & YEAR
+                  ✦ YEAR & SECTION
                 </label>
                 <input
                   type="text"
@@ -147,14 +152,14 @@ function Guest() {
               <div className="flex flex-col">
                 <div className="flex justify-between items-center mb-2">
                   <label className="text-[#FFD700] cinzel text-[10px] font-bold tracking-[0.2em]">
-                    ✦ YOUR INQUIRY TO THE PROFESSOR
+                    ✦ YOUR QUESTION
                   </label>
                   <span className="text-[#C8A951] text-[10px] cinzel">{question.length} / 500 ✦</span>
                 </div>
                 <textarea
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Inscribe your inquiry here..."
+                  placeholder="Ask anything about Cloud or Cybersecurity..."
                   className={`ink-field p-4 rounded-sm w-full min-h-[160px] cinzel text-sm placeholder:text-[#C8A951]/40 resize-none ${formErrors.question ? 'border-[#FF4444]' : ''}`}
                   disabled={loading}
                   maxLength={500}
@@ -169,18 +174,60 @@ function Guest() {
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
-                    <span className="animate-spin mr-3">🦉</span> Sending owl...
+                    <span className="animate-spin mr-3">⚡</span> Connecting...
                   </span>
                 ) : (
-                  '🪄 Send Owl'
+                  'Submit Question ⚡'
                 )}
               </button>
             </form>
           </div>
         </div>
 
-        <div className="mt-12 text-center text-[#C8A951]/40 text-[10px] tracking-[0.5em] cinzel uppercase">
-          ✦ HOGWARTS — THE GREAT HALL ✦
+        {/* Live Questions Feed */}
+        <div className="mt-20 space-y-8">
+          <div className="text-center">
+            <h2 className="text-[#FFD700] cinzel text-sm font-bold tracking-[0.4em] uppercase mb-4">
+              ═══✦ Live Feed ✦═══
+            </h2>
+          </div>
+
+          {approvedQuestions.length === 0 ? (
+            <div className="text-center py-10 opacity-50">
+              <p className="text-[#FFD700] cinzel text-xs tracking-widest uppercase">
+                No questions yet. Be the first to ask! ⚡
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {approvedQuestions.map((q) => (
+                <div key={q.id} className="parchment-scroll magic-border p-1 rounded-sm">
+                  <div className="magic-border-inner bg-[#1A1200]/90 p-6 shadow-xl">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-[#FFFDF0] cinzel font-bold text-xs tracking-wider">
+                          {q.name || 'Anonymous Student'}
+                        </h3>
+                        <p className="text-[#FFD700] text-[10px] cinzel opacity-60">
+                          {q.courseSection}
+                        </p>
+                      </div>
+                      <span className="text-[#C8A951] text-[8px] cinzel opacity-40 uppercase">
+                        {new Date(q.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-[#FFFDF0] text-sm italic font-serif leading-relaxed">
+                      "{q.question}"
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-24 text-center text-[#C8A951]/40 text-[10px] tracking-[0.5em] cinzel uppercase pb-20">
+          ✦ EMPOWERING THE NEXT GENERATION OF IT PROFESSIONALS ✦
         </div>
       </div>
     </div>
