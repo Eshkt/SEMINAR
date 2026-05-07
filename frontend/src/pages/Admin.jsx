@@ -4,7 +4,7 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { fetchAuthSession } from 'aws-amplify/auth';
 
-const VITE_API_URL = import.meta.env.VITE_API_URL;
+const VITE_API_URL = import.meta.env.VITE_API_URL || "https://d11ffcb0dwbou3.cloudfront.net";
 const VITE_RUNTIME = import.meta.env.VITE_RUNTIME || 'local';
 const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || 'localadmin123';
 

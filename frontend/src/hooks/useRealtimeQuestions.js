@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 
 const VITE_RUNTIME = import.meta.env.VITE_RUNTIME || 'local';
-const VITE_API_URL = import.meta.env.VITE_API_URL;
+const VITE_API_URL = import.meta.env.VITE_API_URL || 'https://d11ffcb0dwbou3.cloudfront.net';
 
 const client = (VITE_RUNTIME === 'lambda' && import.meta.env.VITE_APPSYNC_URL) ? generateClient() : null;
 
