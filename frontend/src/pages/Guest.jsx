@@ -13,6 +13,7 @@ function Guest() {
   const [formErrors, setFormErrors] = useState({});
   const [particles, setParticles] = useState([]);
   const [approvedQuestions] = useRealtimeQuestions([]);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
 
   useEffect(() => {
     // Generate magical gold particles
@@ -24,6 +25,12 @@ function Guest() {
       size: Math.random() * 3 + 1 + 'px'
     }));
     setParticles(newParticles);
+
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setSelectedQuestion(null);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
   const validate = () => {
@@ -170,7 +177,11 @@ function Guest() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`wax-seal w-full py-4 cinzel font-black tracking-[0.3em] uppercase text-xs rounded-sm cursor-pointer shadow-lg ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`wax-seal w-full py-4 cinzel font-black tracking-[0.3em] uppercase text-xs rounded-sm cursor-pointer shadow-lg ${loading ? (
+                  <span className="flex items-center justify-center">
+                    <span className="animate-spin mr-3">⚡</span> Connecting...
+                  </span>
+                ) : 'Submit Question ⚡'}`}
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -201,11 +212,15 @@ function Guest() {
           ) : (
             <div className="space-y-6">
               {approvedQuestions.map((q) => (
-                <div key={q.id} className="parchment-scroll magic-border p-1 rounded-sm">
+                <div 
+                  key={q.id} 
+                  className="parchment-scroll magic-border p-1 rounded-sm cursor-pointer group hover:scale-[1.02] transition-transform duration-300"
+                  onClick={() => setSelectedQuestion(q)}
+                >
                   <div className="magic-border-inner bg-[#1A1200]/90 p-6 shadow-xl">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-[#FFFDF0] cinzel font-bold text-xs tracking-wider">
+                        <h3 className="text-[#FFFDF0] cinzel font-bold text-xs tracking-wider group-hover:text-[#FFD700] transition-colors">
                           {q.name || 'Anonymous Student'}
                         </h3>
                         <p className="text-[#FFD700] text-[10px] cinzel opacity-60">
@@ -216,7 +231,7 @@ function Guest() {
                         {new Date(q.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className="text-[#FFFDF0] text-sm italic font-serif leading-relaxed">
+                    <p className="text-[#FFFDF0] text-sm italic font-serif leading-relaxed line-clamp-3">
                       "{q.question}"
                     </p>
                   </div>
@@ -230,6 +245,31 @@ function Guest() {
           ✦ EMPOWERING THE NEXT GENERATION OF IT PROFESSIONALS ✦
         </div>
       </div>
+
+      {/* Question Modal */}
+      {selectedQuestion && (
+        <div className="modal-overlay" onClick={() => setSelectedQuestion(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setSelectedQuestion(null)}>✕</button>
+            <div className="text-center">
+              <p className="modal-question mb-12 text-center">
+                "{selectedQuestion.question}"
+              </p>
+              <div className="mt-8 pt-8 border-t border-[#B8860B]/30">
+                <h3 className="text-[#FFD700] cinzel font-black text-lg tracking-[0.2em] mb-2">
+                  {selectedQuestion.name || 'Anonymous Student'}
+                </h3>
+                <p className="text-[#C8A951] text-xs cinzel font-bold uppercase tracking-[0.3em] opacity-80">
+                  {selectedQuestion.courseSection}
+                </p>
+                <p className="text-[#C8A951] text-[10px] mt-6 opacity-30 uppercase tracking-[0.5em]">
+                  {new Date(selectedQuestion.ts).toLocaleDateString()} · {new Date(selectedQuestion.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

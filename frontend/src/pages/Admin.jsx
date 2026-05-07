@@ -19,6 +19,7 @@ function AdminContent() {
   const consecutiveErrorsRef = useRef(0);
   const POLL_INTERVAL = 5000;
   const [particles, setParticles] = useState([]);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
 
   useEffect(() => {
     // Generate magical gold particles
@@ -30,6 +31,12 @@ function AdminContent() {
       size: Math.random() * 2 + 1 + 'px'
     }));
     setParticles(newParticles);
+
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setSelectedQuestion(null);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
   const getHeaders = async () => {
@@ -103,6 +110,7 @@ function AdminContent() {
       if (res.status === 401) { setError('Access denied. Unauthorized.'); return; }
       if (res.ok) {
         setQuestions(prev => prev.map(q => q.id === id ? { ...q, stat: status } : q));
+        setSelectedQuestion(null);
       }
     } catch (err) { alert('ACTION_FAILED: ' + err.message); }
   };
@@ -113,7 +121,10 @@ function AdminContent() {
       const headers = await getHeaders();
       const res = await fetch(`${VITE_API_URL}/questions/${id}`, { method: 'DELETE', headers });
       if (res.status === 401) { setError('Access denied. Unauthorized.'); return; }
-      if (res.ok) setQuestions(prev => prev.filter(q => q.id !== id));
+      if (res.ok) {
+        setQuestions(prev => prev.filter(q => q.id !== id));
+        setSelectedQuestion(null);
+      }
     } catch (err) { alert('PURGE_FAILED: ' + err.message); }
   };
 
@@ -151,9 +162,9 @@ function AdminContent() {
 
   const getStatusBadge = (stat) => {
     switch(stat) {
-      case 'pend': return <span className="text-[10px] bg-[#B8860B]/20 text-[#FFD700] px-2 py-0.5 rounded border border-[#B8860B]/40 uppercase tracking-tighter">Pending ⏳</span>;
-      case 'apprv': return <span className="text-[10px] bg-[#00FF88]/10 text-[#00FF88] px-2 py-0.5 rounded border border-[#00FF88]/30 uppercase tracking-tighter">Live ✅</span>;
-      case 'flag': return <span className="text-[10px] bg-[#FF4444]/10 text-[#FF4444] px-2 py-0.5 rounded border border-[#FF4444]/30 uppercase tracking-tighter">Hidden 🚫</span>;
+      case 'pend': return <span className="text-[10px] bg-[#B8860B]/20 text-[#FFD700] px-2 py-0.5 rounded border border-[#B8860B]/40 uppercase tracking-tighter font-bold">Pending ⏳</span>;
+      case 'apprv': return <span className="text-[10px] bg-[#00FF88]/10 text-[#00FF88] px-2 py-0.5 rounded border border-[#00FF88]/30 uppercase tracking-tighter font-bold">Live ✅</span>;
+      case 'flag': return <span className="text-[10px] bg-[#FF4444]/10 text-[#FF4444] px-2 py-0.5 rounded border border-[#FF4444]/30 uppercase tracking-tighter font-bold">Hidden 🚫</span>;
       default: return null;
     }
   };
@@ -198,19 +209,19 @@ function AdminContent() {
             onClick={() => setActiveTab('pend')}
             className={`pb-2 cinzel text-[10px] font-bold tracking-[0.2em] uppercase transition-all ${activeTab === 'pend' ? 'text-[#FFD700] border-b-2 border-[#FFD700]' : 'text-[#C8A951] opacity-50 hover:opacity-100'}`}
           >
-            Pending Questions ({questions.filter(q => q.stat === 'pend').length})
+            Pending ({questions.filter(q => q.stat === 'pend').length})
           </button>
           <button 
             onClick={() => setActiveTab('apprv')}
             className={`pb-2 cinzel text-[10px] font-bold tracking-[0.2em] uppercase transition-all ${activeTab === 'apprv' ? 'text-[#FFD700] border-b-2 border-[#FFD700]' : 'text-[#C8A951] opacity-50 hover:opacity-100'}`}
           >
-            Live Questions ({questions.filter(q => q.stat === 'apprv').length})
+            Live ({questions.filter(q => q.stat === 'apprv').length})
           </button>
           <button 
             onClick={() => setActiveTab('flag')}
             className={`pb-2 cinzel text-[10px] font-bold tracking-[0.2em] uppercase transition-all ${activeTab === 'flag' ? 'text-[#FFD700] border-b-2 border-[#FFD700]' : 'text-[#C8A951] opacity-50 hover:opacity-100'}`}
           >
-            Hidden Questions ({questions.filter(q => q.stat === 'flag').length})
+            Hidden ({questions.filter(q => q.stat === 'flag').length})
           </button>
         </div>
       </div>
@@ -223,11 +234,15 @@ function AdminContent() {
       ) : (
         <div className="space-y-10">
           {filteredQuestions.map((q) => (
-            <div key={q.id} className="parchment-scroll magic-border p-1 rounded-sm group hover:scale-[1.01] transition-transform duration-300">
+            <div 
+              key={q.id} 
+              className="parchment-scroll magic-border p-1 rounded-sm group hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+              onClick={() => setSelectedQuestion(q)}
+            >
               <div className="magic-border-inner bg-[#1A1200]/80 overflow-hidden shadow-xl border-l-4 border-l-[#B8860B] group-hover:border-l-[#FFD700]">
                 <div className="p-6 border-b border-[#B8860B] bg-black/20 flex justify-between items-start">
                   <div>
-                    <h3 className="font-black text-[#FFFDF0] cinzel tracking-widest text-lg flex items-center">
+                    <h3 className="font-black text-[#FFFDF0] cinzel tracking-widest text-lg flex items-center group-hover:text-[#FFD700] transition-colors">
                       {q.name || 'Anonymous Student'}
                     </h3>
                     <p className="text-xs text-[#FFD700] cinzel tracking-widest mt-2 flex items-center opacity-80 uppercase">
@@ -246,12 +261,12 @@ function AdminContent() {
                 </div>
                 
                 <div className="p-8 relative bg-black/10">
-                  <p className="text-lg text-[#FFFDF0] leading-relaxed italic font-serif whitespace-pre-wrap">
+                  <p className="text-lg text-[#FFFDF0] leading-relaxed italic font-serif whitespace-pre-wrap line-clamp-3">
                     "{q.question}"
                   </p>
                 </div>
 
-                <div className="p-4 bg-black/40 border-t border-[#B8860B] flex justify-end space-x-4">
+                <div className="p-4 bg-black/40 border-t border-[#B8860B] flex justify-end space-x-4" onClick={e => e.stopPropagation()}>
                   {q.stat !== 'apprv' && (
                     <button 
                       onClick={() => updateStatus(q.id, 'apprv')}
@@ -284,6 +299,67 @@ function AdminContent() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Question Modal */}
+      {selectedQuestion && (
+        <div className="modal-overlay" onClick={() => setSelectedQuestion(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setSelectedQuestion(null)}>✕</button>
+            <div className="flex flex-col h-full">
+              <div className="mb-6">{getStatusBadge(selectedQuestion.stat)}</div>
+              <p className="modal-question mb-12 italic">
+                "{selectedQuestion.question}"
+              </p>
+              
+              <div className="mt-auto pt-8 border-t border-[#B8860B]/30">
+                <div className="flex justify-between items-end mb-8">
+                  <div>
+                    <h3 className="text-[#FFD700] cinzel font-black text-lg tracking-[0.2em] mb-1">
+                      {selectedQuestion.name || 'Anonymous Student'}
+                    </h3>
+                    <p className="text-[#C8A951] text-xs cinzel font-bold uppercase tracking-[0.3em] opacity-80">
+                      {selectedQuestion.courseSection}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[#C8A951] text-[10px] opacity-30 uppercase tracking-widest">
+                      {new Date(selectedQuestion.ts).toLocaleDateString()}
+                    </p>
+                    <p className="text-[#C8A951] text-[10px] opacity-30 uppercase tracking-widest">
+                      {new Date(selectedQuestion.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-4">
+                  {selectedQuestion.stat !== 'apprv' && (
+                    <button 
+                      onClick={() => updateStatus(selectedQuestion.id, 'apprv')}
+                      className="wax-seal px-8 py-3 cinzel font-black text-xs tracking-widest uppercase rounded-sm shadow-xl"
+                    >
+                      Approve ✅
+                    </button>
+                  )}
+                  {selectedQuestion.stat !== 'flag' && (
+                    <button 
+                      onClick={() => updateStatus(selectedQuestion.id, 'flag')}
+                      className="px-8 py-3 border border-[#B8860B] text-[#FFD700] cinzel font-black text-xs tracking-widest uppercase rounded-sm hover:bg-[#B8860B]/20 transition-all"
+                    >
+                      Hide 🚫
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => handleDelete(selectedQuestion.id)}
+                    className="px-6 py-3 border border-[#FF4444] text-[#FF4444] cinzel font-black text-xs tracking-widest uppercase hover:bg-[#FF4444] hover:text-white transition-all rounded-sm"
+                  >
+                    🗑
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
